@@ -1,0 +1,91 @@
+<!-- parking_app/templates/parking_app/admin_staff_list.html -->
+{% extends 'parking_app/base.html' %}
+
+{% block title %}Список працівників{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="margin-bottom: 30px;">
+        <a href="{% url 'parking_app:dashboard' %}" style="color: #667eea; text-decoration: none; font-weight: 500;">
+            ← Назад до панелі
+        </a>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+            <h1 style="color: #2c3e50;">Список працівників</h1>
+            <a href="{% url 'parking_app:admin_register_staff' %}" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 500;">
+                + Додати працівника
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #ffffff;">
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #ffffff;">ID</th>
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #ffffff;">Працівник</th>
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #ffffff;">Контакти</th>
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #ffffff;">Компанія</th>
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #ffffff;">Статус</th>
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #ffffff;">Дії</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for staff in staff_list %}
+                    <tr style="border-bottom: 1px solid #e1e5e9;">
+                        <td style="padding: 15px; color: #777;">{{ staff.0 }}</td>
+                        <td style="padding: 15px;">
+                            <strong style="color: #2e5479; display: block;">{{ staff.1 }} {{ staff.2 }}</strong>
+                            {% if staff.6 %}
+                            <span style="background: #667eea; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 500;">Адмін</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 15px;">
+                            <div style="color: #555;">{{ staff.3 }}</div>
+                            <div style="color: #555;">{{ staff.4 }}</div>
+                        </td>
+                        <td style="padding: 15px; color: #555;">{{ staff.5 }}</td>
+                        <td style="padding: 15px;">
+                            {% if staff.7 %}
+                            <span style="background: #e74c3c; color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: 500;">Звільнений</span>
+                            {% else %}
+                            <span style="background: #27ae60; color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: 500;">Активний</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 15px;">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <a href="{% url 'parking_app:admin_edit_staff' staff.0 %}" 
+                                style="padding: 6px 12px; background: #3498db; color: white; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: 500;">
+                                    Редагувати
+                                </a>
+                                {% if not staff.7 %}
+                                <a href="{% url 'parking_app:admin_fire_staff' staff.0 %}" 
+                                style="padding: 6px 12px; background: #e74c3c; color: white; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: 500;"
+                                onclick="return confirm('Звільнити працівника {{ staff.1 }} {{ staff.2 }}?');">
+                                    Звільнити
+                                </a>
+                                {% else %}
+                                <a href="{% url 'parking_app:admin_restore_staff' staff.0 %}" 
+                                style="padding: 6px 12px; background: #27ae60; color: white; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: 500;"
+                                onclick="return confirm('Відновити працівника {{ staff.1 }} {{ staff.2 }}?');">
+                                    Відновити
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="padding: 40px; text-align: center; color: #777;">
+                            Працівників не знайдено
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        
+    </div>
+</div>
+{% endblock %}

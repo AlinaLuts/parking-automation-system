@@ -1,0 +1,216 @@
+<!-- parking_app/templates/parking_app/admin_current_parking.html -->
+{% extends 'parking_app/base.html' %}
+{% block title %}Поточні машини на парковці{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <div style="margin-bottom: 30px;">
+        <a href="{% url 'parking_app:admin_parking_history' %}" style="color: #667eea; text-decoration: none; font-weight: 500;">
+            ← Історія парковок
+        </a>
+
+        
+        <!-- Поле поиска -->
+        <form method="GET" action="{% url 'parking_app:admin_current_parking' %}" style="margin-top: 20px;">
+            <div style="display: flex; gap: 10px; max-width: 500px;">
+                <input type="text" 
+                       name="search" 
+                       value="{{ search_query|default:'' }}"
+                       placeholder="Пошук по номеру авто (AA1234BB)" 
+                       style="flex: 1; padding: 12px 15px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 14px;">
+                <button type="submit" 
+                        style="padding: 12px 25px; background: #3498db; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;">
+                    Пошук
+                </button>
+                {% if search_query %}
+                <a href="{% url 'parking_app:admin_current_parking' %}" 
+                   style="padding: 12px 15px; background: #95a5a6; color: white; text-decoration: none; border-radius: 8px; font-weight: 500;">
+                    Скинути
+                </a>
+                {% endif %}
+            </div>
+            {% if search_query %}
+            <p style="margin-top: 10px; color: #3498db;">
+                Результати пошуку для "{{ search_query }}": знайдено {{ stats.total_cars }} авто
+            </p>
+            {% endif %}
+        </form>
+    </div>
+    <div style="margin-bottom: 30px;">
+        <a href="{% url 'parking_app:admin_parking_history' %}" style="color: #667eea; text-decoration: none; font-weight: 500;">
+            ← Історія парковок
+        </a>
+        <h1 style="margin-top: 10px; color: #2c3e50;">Поточні машини на парковці</h1>
+        <p style="color: #777; margin-top: 5px;">Машини, які зараз знаходяться на парковці</p>
+    </div>
+
+    <!-- Статистика -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+        <div style="padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
+            <div style="font-size: 32px; color: #2c3e50; font-weight: bold;">{{ stats.total_cars }}</div>
+            <div style="color: #777; margin-top: 5px;">Всього машин</div>
+        </div>
+        
+        <div style="padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
+            <div style="font-size: 32px; color: #3498db; font-weight: bold;">{{ stats.staff_count }}</div>
+            <div style="color: #777; margin-top: 5px;">Співробітників</div>
+        </div>
+        
+        <div style="padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
+            <div style="font-size: 32px; color: #27ae60; font-weight: bold;">{{ stats.guest_count }}</div>
+            <div style="color: #777; margin-top: 5px;">Запрошених гостей</div>
+        </div>
+        
+        <div style="padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
+            <div style="font-size: 32px; color: #f39c12; font-weight: bold;">{{ stats.visitor_count }}</div>
+            <div style="color: #777; margin-top: 5px;">Відвідувачів</div>
+        </div>
+        
+        <div style="padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; border-left: 4px solid #e74c3c;">
+            <div style="font-size: 28px; color: #e74c3c; font-weight: bold;">{{ stats.total_expected|floatformat:2 }} грн</div>
+            <div style="color: #777; margin-top: 5px;">Очікуваний дохід</div>
+        </div>
+    </div>
+
+    <!-- Таблица с машинами -->
+    <div class="card" style="margin-bottom: 30px;">
+        <h3 style="color: #2c3e50; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #f0f0f0;">
+            Список машин на парковці
+            <span style="float: right; font-size: 14px; color: #777; font-weight: normal;">
+                Оновлено: {% now "H:i" %}
+            </span>
+        </h3>
+        
+        {% if current_parking %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                <thead>
+                    <tr style="background: #f8f9fa;">
+                        <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #e1e5e9; font-weight: 600; color: #2c3e50;">№</th>
+                        <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #e1e5e9; font-weight: 600; color: #2c3e50;">Номер авто</th>
+                        <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #e1e5e9; font-weight: 600; color: #2c3e50;">Час заїзду</th>
+                        <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #e1e5e9; font-weight: 600; color: #2c3e50;">Тип</th>
+                        <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #e1e5e9; font-weight: 600; color: #2c3e50;">Час на парковці</th>
+                        <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #e1e5e9; font-weight: 600; color: #2c3e50;">Вартість</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for car in current_parking %}
+                    <tr style="border-bottom: 1px solid #e1e5e9; {% if forloop.counter|divisibleby:2 %}background: #f8f9fa;{% endif %}">
+                        <td style="padding: 12px 15px;">{{ forloop.counter }}</td>
+                        <td style="padding: 12px 15px;">
+                            <span style="font-weight: bold; font-size: 16px; letter-spacing: 1px;">{{ car.0 }}</span>
+                        </td>
+                        <td style="padding: 12px 15px;">
+                            {{ car.1|date:"d.m.Y H:i" }}
+                            <br>
+                            <small style="color: #777;">{{ car.1|timesince }} тому</small>
+                        </td>
+                        <td style="padding: 12px 15px;">
+                            {% if "Співробітник" in car.2 %}
+                                <span style="display: inline-block; padding: 4px 10px; background: #e8f4fc; color: #3498db; border-radius: 4px; font-weight: 600;">
+                                    {{ car.2 }}
+                                </span>
+                            {% elif "Запрошений гість" in car.2 %}
+                                <span style="display: inline-block; padding: 4px 10px; background: #e8f6ef; color: #27ae60; border-radius: 4px; font-weight: 600;">
+                                    {{ car.2 }}
+                                </span>
+                            {% elif "оплачено" in car.2 %}
+                                <span style="display: inline-block; padding: 4px 10px; background: #f0f9f0; color: #27ae60; border-radius: 4px; font-weight: 600;">
+                                    {{ car.2 }}
+                                </span>
+                            {% else %}
+                                <span style="display: inline-block; padding: 4px 10px; background: #fff8e1; color: #f39c12; border-radius: 4px; font-weight: 600;">
+                                    {{ car.2 }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 12px 15px;">
+                            {{ car.3|floatformat:1 }} год.
+                            <br>
+                            
+                        </td>
+                        <td style="padding: 12px 15px; font-weight: 600;">
+                            {% if car.4 > 0 %}
+                                <span style="color: #e74c3c;">{{ car.4|floatformat:2 }} грн</span>
+                            {% else %}
+                                <span style="color: #27ae60;">0.00 грн</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 40px 20px;">
+            <div style="font-size: 72px; color: #ddd; margin-bottom: 20px;">🚗</div>
+            <h3 style="color: #95a5a6; margin-bottom: 10px;">Парковка порожня</h3>
+            <p style="color: #bdc3c7;">На даний момент на парковці немає машин.</p>
+        </div>
+        {% endif %}
+        
+        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e1e5e9; color: #777; font-size: 13px;">
+            <p style="margin: 0;">
+                • Вартість для відвідувачів розраховується в реальному часі<br>
+                • Для співробітників та запрошених гостей паркування безкоштовне<br>
+                • Дані оновлюються автоматично при оновленні сторінки
+            </p>
+        </div>
+    </div>
+
+    <!-- Кнопки управления -->
+    <div style="display: flex; gap: 15px; justify-content: flex-end;">
+        <a href="{% url 'parking_app:admin_parking_history' %}" 
+           style="padding: 10px 20px; background: #3498db; color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">
+            Перейти до історії
+        </a>
+        <button onclick="location.reload()" 
+                style="padding: 10px 20px; background: #27ae60; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer;">
+            Оновити дані
+        </button>
+    </div>
+</div>
+
+<style>
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e1e5e9;
+    }
+    
+    table tr:hover {
+        background: #f5f7fa !important;
+    }
+    
+    @media (max-width: 768px) {
+        .container {
+            padding: 10px;
+        }
+        
+        table {
+            font-size: 12px;
+        }
+        
+        th, td {
+            padding: 8px 10px !important;
+        }
+    }
+</style>
+
+<script>
+    // Автообновление каждые 60 секунд
+    setTimeout(function() {
+        location.reload();
+    }, 60000);
+    
+    // Добавляем иконку обновления
+    document.addEventListener('DOMContentLoaded', function() {
+        const updateBtn = document.querySelector('button[onclick="location.reload()"]');
+        updateBtn.innerHTML = '🔄 Оновити дані';
+    });
+</script>
+{% endblock %}

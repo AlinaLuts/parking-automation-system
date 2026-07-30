@@ -1,0 +1,144 @@
+<!-- parking_app/templates/parking_app/admin_price_list.html -->
+{% extends 'parking_app/base.html' %}
+{% block title %}Тарифи паркування{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="margin-bottom: 30px;">
+        <a href="{% url 'parking_app:dashboard' %}" style="color: #667eea; text-decoration: none; font-weight: 500;">
+            ← Назад до панелі
+        </a>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+            <h1 style="color: #2c3e50;">Тарифи паркування</h1>
+            <a href="{% url 'parking_app:admin_create_price' %}" style="padding: 10px 20px; background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 500;">
+                + Створити тариф
+            </a>
+        </div>
+    </div>
+
+    <!-- Поточний тариф -->
+    {% if current_price %}
+    <div class="card" style="margin-bottom: 30px; border-left: 6px solid #27ae60;">
+        <h3 style="color: #2c3e50; margin-bottom: 20px;">Поточний тариф</h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div style="background: #f0f9f0; padding: 20px; border-radius: 8px;">
+                <div style="font-size: 14px; color: #27ae60; font-weight: 500;">Ціна за годину</div>
+                <div style="font-size: 32px; font-weight: bold; color: #2c3e50; margin: 5px 0;">{{ current_price.1 }} грн</div>
+            </div>
+            
+            <div style="background: #f0f9f0; padding: 20px; border-radius: 8px;">
+                <div style="font-size: 14px; color: #27ae60; font-weight: 500;">Період дії</div>
+                <div style="font-size: 16px; color: #2c3e50; margin: 5px 0;">
+                    з {{ current_price.2|date:"d.m.Y H:i" }}<br>
+                    по {{ current_price.3|date:"d.m.Y H:i" }}
+                </div>
+            </div>
+            
+            
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Статистика -->
+    <div class="card" style="margin-bottom: 30px;">
+        <h3 style="color: #2c3e50; margin-bottom: 20px;">📊 Статистика тарифів</h3>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+            <div style="text-align: center; background: #f0f9f0; padding: 20px; border-radius: 8px;">
+                <div style="font-size: 36px; font-weight: bold; color: #27ae60;">{{ current_count }}</div>
+                <div style="color: #27ae60; font-weight: 500; margin-top: 10px;">Поточних</div>
+            </div>
+            <div style="text-align: center; background: #f0f7ff; padding: 20px; border-radius: 8px;">
+                <div style="font-size: 36px; font-weight: bold; color: #3498db;">{{ future_count }}</div>
+                <div style="color: #3498db; font-weight: 500; margin-top: 10px;">Майбутніх</div>
+            </div>
+            <div style="text-align: center; background: #f5f5f5; padding: 20px; border-radius: 8px;">
+                <div style="font-size: 36px; font-weight: bold; color: #95a5a6;">{{ past_count }}</div>
+                <div style="color: #95a5a6; font-weight: 500; margin-top: 10px;">Завершених</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список всіх тарифів -->
+    <div class="card">
+        <h3 style="color: #2c3e50; margin-bottom: 20px;">📋 Історія тарифів</h3>
+        
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f8f9fa;">
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #555;">Період</th>
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #555;">Ціна</th>
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #555;">Статус</th>
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #555;">Дії</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for price in price_list %}
+                    <tr style="border-bottom: 1px solid #e1e5e9;">
+                        <td style="padding: 15px;">
+                            <div style="color: #2c3e50; font-weight: 500;">{{ price.2|date:"d.m.Y H:i" }}</div>
+                            <div style="color: #777; font-size: 14px;">до {{ price.3|date:"d.m.Y H:i" }}</div>
+                        </td>
+                        <td style="padding: 15px;">
+                            <div style="font-size: 20px; font-weight: bold; color: #2c3e50;">{{ price.1 }} грн</div>
+                            <div style="color: #777; font-size: 14px;">за годину</div>
+                        </td>
+                        <td style="padding: 15px;">
+                            {% if price.4 == 'current' %}
+                            <span style="background: #27ae60; color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: 500;">Поточний</span>
+                            {% elif price.4 == 'future' %}
+                            <span style="background: #3498db; color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: 500;">Майбутній</span>
+                            {% else %}
+                            <span style="background: #95a5a6; color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: 500;">Завершений</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 15px;">
+                            <div style="display: flex; gap: 8px;">
+                                {% if price.4 == 'future' %}
+                                <a href="{% url 'parking_app:admin_edit_price' price.0 %}" 
+                                   style="padding: 6px 12px; background: #f39c12; color: white; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: 500;">
+                                    Редагувати
+                                </a>
+                                <a href="{% url 'parking_app:admin_delete_price' price.0 %}" 
+                                style="padding: 6px 12px; background: #e74c3c; color: white; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: 500;"
+                                onclick="return confirmDelete(this, '{{ price.1 }} грн');">
+                                    Видалити
+                                </a>
+                                {% elif price.4 == 'current' %}
+                                <a href="{% url 'parking_app:admin_edit_price' price.0 %}" 
+                                   style="padding: 6px 12px; background: #3498db; color: white; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: 500;">
+                                    Змінити кінець
+                                </a>
+                                {% else %}
+                                <span style="color: #777; font-size: 12px;">Тільки перегляд</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="padding: 40px; text-align: center; color: #777;">
+                            Тарифів не знайдено
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(link, price) {
+    const confirmed = confirm(`Ви дійсно хочете видалити тариф ${price} грн/год?\n\nЦю дію неможливо скасувати!`);
+    if (confirmed) {
+        // Показываем индикатор загрузки
+        link.style.opacity = '0.5';
+        link.textContent = 'Видаляється...';
+        return true;
+    }
+    return false;
+}
+</script>
+{% endblock %}

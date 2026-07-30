@@ -1,0 +1,356 @@
+<!-- templates/home.html -->
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Автоматизація паркінгу</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ffb286 0%, #fc7639 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1350px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 0;
+            color: white;
+        }
+        
+        header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            line-height: 1.6;
+        }
+        
+        .main-actions {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+        
+        .action-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .action-card h3 {
+            color: #f86e1e;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .action-card p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffaf72 0%, #f3360c 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            min-height: 50px;
+            line-height: 20px;
+            vertical-align: middle;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .btn.secondary {
+            background: white;
+            color: #ffd6a7;
+            border: 2px solid #fc6d0e;
+        }
+        
+        .btn.secondary:hover {
+            background: #f39d75;
+            color: white;
+        }
+        
+        /* НОВЫЕ СТИЛИ ДЛЯ ГРУППЫ КНОПОК */
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: auto;
+        }
+        
+        .button-group .btn {
+            flex: 1;
+            min-width: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .single-button {
+            display: flex;
+            justify-content: center;
+            margin-top: auto;
+        }
+        
+        .single-button .btn {
+            min-width: 200px;
+        }
+        
+        .features {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            margin-top: 60px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .features h2 {
+            text-align: center;
+            color: #ff6d0c;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+        
+        .feature-item {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .feature-item h4 {
+            color: #fc8208;
+            margin: 20px 0 10px;
+            font-size: 1.3rem;
+        }
+        
+        .icon {
+            font-size: 3rem;
+            color: #fc8208;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: white;
+            margin-top: 60px;
+        }
+        
+        .user-info {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 30px;
+            display: inline-block;
+        }
+        
+        @media (max-width: 768px) {
+            .main-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .action-card {
+                width: 100%;
+                max-width: 350px;
+            }
+            
+            header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .button-group .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Система автоматизації паркінгу</h1>
+            <p>Сучасне рішення для управління паркінгом бізнес-центру. Автоматизований контроль доступу, тарифікація та зручне керування.</p>
+            
+            {% if request.session.user_id %}
+                <div class="user-info">
+                    <h3>Вітаємо, {{ request.session.first_name }} {{ request.session.last_name }}!</h3>
+                    <p>Ваша роль: 
+                        {% if request.session.user_role == 'admin_role' %}
+                            Адміністратор
+                        {% elif request.session.user_role == 'staff_role' %}
+                            Працівник
+                        {% elif request.session.user_role == 'guest_role' %}
+                            Гість
+                        {% else %}
+                            Відвідувач
+                        {% endif %}
+                    </p>
+                </div>
+            {% endif %}
+        </header>
+        
+        <div class="main-actions">
+            {% if request.session.user_id %}
+                <div class="action-card">
+                    <h3>Панель управління</h3>
+                    <p>Перейдіть до вашої персональної панелі для керування паркінгом</p>
+                    <div class="single-button">
+                        <a href="{% url 'parking_app:dashboard' %}" class="btn">Моя панель</a>
+                    </div>
+                </div>
+                
+                <div class="action-card">
+                    <h3>Заїзд/виїзд</h3>
+                    <p>Швидкий доступ до функцій заїзду та виїзду автомобілів</p>
+                    <div class="button-group">
+                        <a href="{% url 'parking_app:process_entry' %}" class="btn">Заїхати</a>
+                        <a href="{% url 'parking_app:process_exit' %}" class="btn secondary">Виїхати</a>
+                    </div>
+                </div>
+                
+                <div class="action-card">
+                    <h3>Вийти з системи</h3>
+                    <p>Завершити роботу в системі паркінгу</p>
+                    <div class="single-button">
+                        <a href="{% url 'parking_app:logout' %}" class="btn secondary">Вийти</a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="action-card">
+                    <h3>Вхід до системи</h3>
+                    <p>Для працівників та адміністраторів. Використовуйте email або номер телефону</p>
+                    <div class="single-button">
+                        <a href="{% url 'parking_app:login' %}" class="btn">Увійти</a>
+                    </div>
+                </div>
+                
+                <div class="action-card">
+                    <h3>Заїхати на паркінг</h3>
+                    <p>Швидкий заїзд для гостей та відвідувачів. Без реєстрації</p>
+                    <div class="single-button">
+                        <a href="{% url 'parking_app:process_entry' %}" class="btn">Заїхати</a>
+                    </div>
+                </div>
+                
+                <div class="action-card">
+                    <h3>Виїхати з паркінгу</h3>
+                    <p>Виїзд автомобіля та оплата паркування</p>
+                    <div class="single-button">
+                        <a href="{% url 'parking_app:process_exit' %}" class="btn">Виїхати</a>
+                    </div>
+                </div>
+
+                <div class="action-card">
+                    <h3>Активні паркування</h3>
+                    <p>Перегляд часу та оплати активних парковок</p>
+                    <div class="single-button">
+                        <a href="{% url 'parking_app:active_parkings' %}" class="btn">Переглянути</a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="features">
+            <h2>Можливості системи</h2>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <div class="icon"></div>
+                    <h4>Для працівників</h4>
+                    <p>Безкоштовне паркування, управління авто, запрошення гостей</p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="icon"></div>
+                    <h4>Для гостей</h4>
+                    <p>Тимчасовий доступ за запрошенням, безкоштовне паркування</p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="icon"></div>
+                    <h4>Для відвідувачів</h4>
+                    <p>Платне паркування з погодинною оплатою, зручний розрахунок</p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="icon"></div>
+                    <h4>Для адміністраторів</h4>
+                    <p>Повний контроль системи, статистика, управління тарифами</p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="icon"></div>
+                    <h4>Автоматизація</h4>
+                    <p>Автоматичне розпізнавання номерів, контроль шлагбаумів</p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="icon"></div>
+                    <h4>Звітність</h4>
+                    <p>Детальна статистика паркування, фінансові звіти</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+         
+        </footer>
+    </div>
+</body>
+</html>

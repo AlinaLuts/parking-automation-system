@@ -1,0 +1,353 @@
+{% extends 'parking_app/base.html' %}
+
+{% block title %}Створити запрошення | Паркінг{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="margin-bottom: 30px;">
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+            <a href="{% url 'parking_app:dashboard' %}" class="btn secondary">
+                ← Назад
+            </a>
+            <h1 style="margin: 0; color: #f75510;">Створити запрошення для гостя</h1>
+        </div>
+        <p style="color: #666; margin-bottom: 0;">Заповніть деталі для доступу гостя до паркінгу</p>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div style="padding: 15px; margin-bottom: 20px; border-radius: 8px; 
+                        {% if message.tags == 'error' %} 
+                        background: #ffeaea; color: #d32f2f; border-left: 4px solid #d32f2f;
+                        {% else %}
+                        background: #e8f5e9; color: #2e7d32; border-left: 4px solid #2e7d32;
+                        {% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" style="max-width: 800px;">
+        {% csrf_token %}
+        
+        <!-- Основная информация -->
+        <div style="background: white; border-radius: 8px; padding: 25px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h3 style="margin-top: 0; margin-bottom: 20px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">Основна інформація</h3>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #ff6b2c;">
+                    Номерний знак авто *
+                </label>
+                <input type="text" 
+                       name="vehicle_plate" 
+                       value="{{ vehicle_plate|default:'' }}"
+                       required
+                       pattern="[A-ZА-Я0-9\s-]+"
+                       placeholder="AA 1234 BB"
+                       style="width: 100%; padding: 12px 15px; border: 2px solid #ffddc1; border-radius: 6px; font-size: 16px;">
+                <div style="font-size: 14px; color: #888; margin-top: 5px;">
+                    Обов'язкове поле. Введіть номер автомобіля гостя
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">
+                    Модель автомобіля (необов'язково)
+                </label>
+                <input type="text" 
+                       name="vehicle_model" 
+                       value="{{ vehicle_model|default:'' }}"
+                       placeholder="Наприклад: Toyota Camry"
+                       style="width: 100%; padding: 12px 15px; border: 2px solid #eee; border-radius: 6px; font-size: 16px;">
+            </div>
+        </div>
+
+        <!-- Информация о госте (опционально) -->
+        <div style="background: white; border-radius: 8px; padding: 25px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h3 style="margin-top: 0; margin-bottom: 20px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                Інформація про гостя (необов'язково)
+            </h3>
+            <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                Заповніть для зручності комунікації з гостем. Можна залишити порожнім.
+            </p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <div>
+                    <label style="display: block; margin-bottom: 8px; color: #333;">
+                        Ім'я гостя
+                    </label>
+                    <input type="text" 
+                           name="guest_first_name" 
+                           value="{{ guest_first_name|default:'' }}"
+                           placeholder="Ім'я"
+                           style="width: 100%; padding: 12px 15px; border: 2px solid #eee; border-radius: 6px; font-size: 16px;">
+                </div>
+                
+                <div>
+                    <label style="display: block; margin-bottom: 8px; color: #333;">
+                        Прізвище гостя
+                    </label>
+                    <input type="text" 
+                           name="guest_last_name" 
+                           value="{{ guest_last_name|default:'' }}"
+                           placeholder="Прізвище"
+                           style="width: 100%; padding: 12px 15px; border: 2px solid #eee; border-radius: 6px; font-size: 16px;">
+                </div>
+            </div>
+            
+            <div>
+                <label style="display: block; margin-bottom: 8px; color: #333;">
+                    Контактний телефон (необов'язково)
+                </label>
+                <input type="tel" 
+                       name="guest_phone" 
+                       value="{{ guest_phone|default:'' }}"
+                       placeholder="+380 XX XXX XX XX"
+                       pattern="[\+]?[0-9\s\-\(\)]+"
+                       style="width: 100%; padding: 12px 15px; border: 2px solid #eee; border-radius: 6px; font-size: 16px;">
+                <div style="font-size: 14px; color: #888; margin-top: 5px;">
+                    Номер телефону для зв'язку з гостем. Можна залишити порожнім.
+                </div>
+            </div>
+        </div>
+
+        <!-- Время парковки -->
+        <div style="background: white; border-radius: 8px; padding: 25px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h3 style="margin-top: 0; margin-bottom: 20px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">Час паркування *</h3>
+            <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                Максимальна тривалість запрошення - 24 години
+            </p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #ff6b2c;">
+                        Початок дії запрошення *
+                    </label>
+                    <input type="datetime-local" 
+                           id="start_time" 
+                           name="start_time" 
+                           value="{{ start_time|default:'' }}"
+                           required
+                           style="width: 100%; padding: 12px 15px; border: 2px solid #ffddc1; border-radius: 6px; font-size: 16px;">
+                    <div style="font-size: 14px; color: #888; margin-top: 5px;">
+                        Коли гость може приїхати
+                    </div>
+                </div>
+                
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #ff6b2c;">
+                        Кінець дії запрошення *
+                    </label>
+                    <input type="datetime-local" 
+                           id="end_time" 
+                           name="end_time" 
+                           value="{{ end_time|default:'' }}"
+                           required
+                           style="width: 100%; padding: 12px 15px; border: 2px solid #ffddc1; border-radius: 6px; font-size: 16px;">
+                    <div style="font-size: 14px; color: #888; margin-top: 5px;">
+                        До якого часу діє запрошення
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 15px; background: #fff5eb; border-radius: 6px; border-left: 4px solid #ff8c42;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="font-weight: bold; color: #ff6b2c;">Тривалість:</div>
+                    <div id="duration-display" style="font-weight: 600;">—</div>
+                    <div id="duration-warning" style="color: #ff6b2c; font-size: 14px; margin-left: auto;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Действия -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; padding-top: 25px; border-top: 1px solid #eee;">
+            <a href="{% url 'parking_app:dashboard' %}" class="btn secondary" style="padding: 12px 30px;">
+                Скасувати
+            </a>
+            <button type="submit" class="btn" style="padding: 12px 40px;">
+                Створити запрошення
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const formatDateTimeLocal = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
+    // Установка значений по умолчанию
+    const now = new Date();
+    const startTime = new Date(now.getTime() + 2 * 60000); // +5 минут
+    const endTime = new Date(startTime.getTime() + 3 * 3600000); // +3 часа
+
+    const startTimeInput = document.getElementById('start_time');
+    const endTimeInput = document.getElementById('end_time');
+    const durationDisplay = document.getElementById('duration-display');
+    const durationWarning = document.getElementById('duration-warning');
+
+    if (startTimeInput && !startTimeInput.value) {
+        startTimeInput.value = formatDateTimeLocal(startTime);
+    }
+    if (endTimeInput && !endTimeInput.value) {
+        endTimeInput.value = formatDateTimeLocal(endTime);
+    }
+
+    // Функция обновления продолжительности
+    function updateDuration() {
+        if (startTimeInput.value && endTimeInput.value) {
+            const start = new Date(startTimeInput.value);
+            const end = new Date(endTimeInput.value);
+            const diffMs = end - start;
+            const diffHours = diffMs / 3600000;
+            
+            if (diffHours > 0) {
+                if (diffHours < 24) {
+                    const hours = Math.floor(diffHours);
+                    const minutes = Math.floor((diffHours - hours) * 60);
+                    
+                    if (minutes > 0) {
+                        durationDisplay.textContent = `${hours} год ${minutes} хв`;
+                    } else {
+                        durationDisplay.textContent = `${hours} год`;
+                    }
+                } else {
+                    const days = Math.floor(diffHours / 24);
+                    const hours = Math.floor(diffHours % 24);
+                    const minutes = Math.floor((diffHours - Math.floor(diffHours)) * 60);
+                    
+                    if (hours > 0 && minutes > 0) {
+                        durationDisplay.textContent = `${days} дн ${hours} год ${minutes} хв`;
+                    } else if (hours > 0) {
+                        durationDisplay.textContent = `${days} дн ${hours} год`;
+                    } else if (minutes > 0) {
+                        durationDisplay.textContent = `${days} дн ${minutes} хв`;
+                    } else {
+                        durationDisplay.textContent = `${days} дн`;
+                    }
+                }
+                
+                // Проверка на превышение 24 часов
+                if (diffHours > 24) {
+                    durationWarning.textContent = 'Перевищено максимальну тривалість 24 години';
+                    durationWarning.style.color = '#d32f2f';
+                } else {
+                    durationWarning.textContent = '';
+                }
+            } else {
+                durationDisplay.textContent = '—';
+                durationWarning.textContent = 'Час завершення має бути пізніше за час початку';
+                durationWarning.style.color = '#d32f2f';
+            }
+        } else {
+            durationDisplay.textContent = '—';
+            durationWarning.textContent = '';
+        }
+    }
+
+    // Автоматическая установка времени окончания (максимум +24 часа)
+    startTimeInput.addEventListener('change', function() {
+        const start = new Date(this.value);
+        const end = new Date(endTimeInput.value);
+        
+        if (!endTimeInput.value || end <= start) {
+            // Устанавливаем конец через 3 часа, но не больше 24 часов от начала
+            let newEnd = new Date(start.getTime() + 3 * 3600000);
+            const maxEnd = new Date(start.getTime() + 24 * 3600000);
+            
+            if (newEnd > maxEnd) {
+                newEnd = maxEnd;
+            }
+            
+            endTimeInput.value = formatDateTimeLocal(newEnd);
+        } else {
+            // Проверяем, не превышает ли текущий интервал 24 часа
+            const currentEnd = new Date(endTimeInput.value);
+            const diffHours = (currentEnd - start) / 3600000;
+            
+            if (diffHours > 24) {
+                // Корректируем до 24 часов
+                const correctedEnd = new Date(start.getTime() + 24 * 3600000);
+                endTimeInput.value = formatDateTimeLocal(correctedEnd);
+            }
+        }
+        updateDuration();
+    });
+
+    endTimeInput.addEventListener('change', updateDuration);
+
+    // Инициализация продолжительности
+    updateDuration();
+
+    // Валидация формы
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(event) {
+        // Проверка длительности
+        if (startTimeInput.value && endTimeInput.value) {
+            const start = new Date(startTimeInput.value);
+            const end = new Date(endTimeInput.value);
+            const diffHours = (end - start) / 3600000;
+            
+            if (diffHours > 24) {
+                event.preventDefault();
+                alert('Максимальна тривалість запрошення - 24 години');
+                return false;
+            }
+            
+            if (diffHours <= 0) {
+                event.preventDefault();
+                alert('Час завершення має бути пізніше за час початку');
+                return false;
+            }
+        }
+        
+        // Проверка обязательных полей
+        const vehiclePlate = document.querySelector('input[name="vehicle_plate"]');
+        if (!vehiclePlate.value.trim()) {
+            event.preventDefault();
+            alert('Будь ласка, введіть номер автомобіля');
+            vehiclePlate.focus();
+            return false;
+        }
+        
+        if (!startTimeInput.value || !endTimeInput.value) {
+            event.preventDefault();
+            alert('Будь ласка, вкажіть час початку та завершення');
+            return false;
+        }
+        
+        return true;
+    });
+});
+</script>
+
+<style>
+    @media (max-width: 768px) {
+        .container {
+            padding: 15px;
+        }
+        
+        div[style*="grid-template-columns: 1fr 1fr"] {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        div[style*="justify-content: space-between"] {
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        div[style*="justify-content: space-between"] a,
+        div[style*="justify-content: space-between"] button {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}

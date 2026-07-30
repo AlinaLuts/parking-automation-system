@@ -1,0 +1,219 @@
+<!-- parking_app/templates/parking_app/guest_edit_profile.html -->
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редагування профілю - Паркінг</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2E7D32;
+            margin-top: 0;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        .readonly-field {
+            background: #f5f5f5;
+            color: #666;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2E7D32;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .password-note {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .section-title {
+            color: #4CAF50;
+            margin: 25px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8f5e9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Редагування профілю</h1>
+        
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="section-title">Основна інформація</div>
+            
+            <div class="form-group">
+                <label for="first_name">Ім'я</label>
+                <input type="text" 
+                       id="first_name" 
+                       name="first_name" 
+                       value="{{ first_name|default:'' }}"
+                       required>
+            </div>
+            
+            <div class="form-group">
+                <label for="last_name">Прізвище</label>
+                <input type="text" 
+                       id="last_name" 
+                       name="last_name" 
+                       value="{{ last_name|default:'' }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email (необов'язково)</label>
+                <input type="email" 
+                       id="email" 
+                       name="email" 
+                       value="{{ email|default:'' }}"
+                       placeholder="example@email.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">Номер телефону</label>
+                <input type="text" 
+                       id="phone" 
+                       value="{{ phone|default:'' }}"
+                       class="readonly-field"
+                       readonly>
+                <div class="password-note">Номер телефону не можна змінити</div>
+            </div>
+            
+            <div class="section-title">Безпека</div>
+            
+            <div class="form-group">
+                <label for="password">Новий пароль (необов'язково)</label>
+                <input type="password" 
+                       id="password" 
+                       name="password"
+                       placeholder="Введіть новий пароль">
+            </div>
+            
+            <div class="form-group">
+                <label for="password_confirm">Підтвердження пароля</label>
+                <input type="password" 
+                       id="password_confirm" 
+                       name="password_confirm"
+                       placeholder="Повторіть пароль">
+                <div class="password-note">
+                    Залишіть порожнім, якщо не хочете змінювати пароль
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">
+                    Зберегти зміни
+                </button>
+                
+                {% if user_type == 'guest' %}
+                <a href="{% url 'parking_app:guest_dashboard' %}" class="btn btn-secondary">
+                    Скасувати
+                </a>
+                {% else %}
+                <a href="{% url 'parking_app:visitor_dashboard' %}" class="btn btn-secondary">
+                    Скасувати
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</body>
+</html>

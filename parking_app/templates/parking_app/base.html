@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Паркінг{% endblock %}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #fff5eb 0%, #ffe8d6 100%);
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff8c42 0%, #f75510 100%);
+            color: white;
+            padding: 1.2rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(247, 85, 16, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none" opacity="0.1"><polygon points="0,0 100,0 0,100" fill="white"/></svg>');
+            background-size: cover;
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .nav {
+            background: #ffa366;
+            padding: 0.8rem 2rem;
+            box-shadow: 0 2px 8px rgba(247, 85, 16, 0.15);
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav a:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .nav a.active {
+            background: #ff8c42;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 1rem 0;
+            box-shadow: 0 8px 24px rgba(255, 140, 66, 0.15);
+            border: 1px solid #ffddc1;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(255, 140, 66, 0.2);
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #ff8c42 0%, #f75510 100%);
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(247, 85, 16, 0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(247, 85, 16, 0.3);
+            background: linear-gradient(135deg, #ff9d42 0%, #ff6b2c 100%);
+        }
+        
+        .btn.secondary {
+            background: white;
+            color: #ff6b2c;
+            border: 2px solid #ff8c42;
+        }
+        
+        .btn.secondary:hover {
+            background: #fff5eb;
+            color: #f75510;
+        }
+        
+        .btn.danger {
+            background: linear-gradient(135deg, #ff4242 0%, #f71010 100%);
+        }
+        
+        .btn.danger:hover {
+            background: linear-gradient(135deg, #ff5d5d 0%, #ff2c2c 100%);
+        }
+        
+        .error {
+            color: #ff3b30;
+            background: linear-gradient(135deg, #ffeaea 0%, #ffd6d6 100%);
+            padding: 1rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            border-left: 5px solid #ff3b30;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .success {
+            color: #27ae60;
+            background: linear-gradient(135deg, #eaffea 0%, #d6ffd6 100%);
+            padding: 1rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            border-left: 5px solid #27ae60;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, #fff5eb 0%, #ffebd6 100%);
+            border-left: 5px solid #ff8c42;
+            padding: 1.5rem;
+            border-radius: 0 12px 12px 0;
+            margin: 1.5rem 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(255, 140, 66, 0.1);
+        }
+        
+        th {
+            background: linear-gradient(135deg, #ff8c42 0%, #f75510 100%);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #ffddc1;
+            background: white;
+        }
+        
+        tr:hover td {
+            background: #fff9f5;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(255, 140, 66, 0.1);
+            border: 1px solid #ffddc1;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card h3 {
+            color: #ff6b2c;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .stat-card .number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #f75510;
+            line-height: 1;
+        }
+        
+        form {
+            max-width: 600px;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #ff6b2c;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #ffddc1;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #ff8c42;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 140, 66, 0.2);
+        }
+        
+        .icon {
+            font-size: 1.2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            
+            .nav {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: stretch;
+            }
+            
+            .nav a {
+                justify-content: center;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <!-- OpenCV.js для обработки изображений -->
+<script async src="https://docs.opencv.org/4.5.0/opencv.js" onload="onOpenCvReady();"></script>
+
+<!-- Tesseract.js для распознавания текста -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.5/dist/tesseract.min.js"></script></head>
+<body>
+    <div class="header">
+        <h1>Система автоматизації паркінгу</h1>
+        {% if request.session.user_id %}
+            <div class="user-info">
+                <div class="user-name">
+                    {{ request.session.first_name }} {{ request.session.last_name }}
+                </div>
+                <a href="{% url 'parking_app:logout' %}" class="logout-btn">
+                    <span class="icon"></span> Вийти
+                </a>
+            </div>
+        {% endif %}
+    </div>
+    
+    {% if request.session.user_id %}
+    <div class="nav">
+        <a href="{% url 'parking_app:home' %}">Головна</a>
+        {% if request.session.user_role == 'admin_role' %}
+            <a href="{% url 'parking_app:staff_add_vehicle' %}">Авто</a>
+            <a href="{% url 'parking_app:admin_register_staff' %}">Додати працівника</a>
+            <a href="{% url 'parking_app:admin_staff_list' %}">Список працівників</a>
+            <a href="{% url 'parking_app:admin_create_price' %}">Тарифи</a>
+            <a href="{% url 'parking_app:admin_current_parking' %}">Поточні паркування</a>
+            <a href="{% url 'parking_app:admin_parking_history' %}">Історія паркувань</a>
+            <a href="{% url 'parking_app:admin_financial_report' %}">Фінансовий звіт</a>
+        {% elif request.session.user_role == 'staff_role' %}
+            <a href="{% url 'parking_app:dashboard' %}">Моя панель</a>
+            <a href="{% url 'parking_app:staff_add_vehicle' %}">Додати авто</a>
+            <a href="{% url 'parking_app:staff_parking_history' %}">Історія паркувань</a>
+            <a href="{% url 'parking_app:staff_create_invitation' %}">Запросити гостя</a>
+            <a href="{% url 'parking_app:staff_invitations' %}">Всі запрошення</a>
+        {% endif %}
+        <a class="nav-link" href="{% url 'parking_app:active_parkings' %}">
+        <i class="fas fa-car"></i> Статус паркування
+        </a>
+        <a href="{% url 'parking_app:process_entry' %}">Заїхати</a>
+        <a href="{% url 'parking_app:process_exit' %}">Виїхати</a>
+    </div>
+    {% endif %}
+    
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    <!-- Debug panel для тестирования -->
+<div id="debug-panel" style="position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; z-index: 9999; display: none;">
+    <h4 style="margin: 0 0 10px 0;">Debug Info</h4>
+    <div id="debug-output" style="font-family: monospace; font-size: 12px;"></div>
+</div>
+
+<script>
+// Переключение debug панели
+if (window.location.search.includes('debug=1')) {
+    document.getElementById('debug-panel').style.display = 'block';
+    
+    // Переопределяем showDebug для вывода в панель
+    const originalShowDebug = window.showDebug || console.log;
+    window.showDebug = function(message) {
+        originalShowDebug(message);
+        const debugOutput = document.getElementById('debug-output');
+        if (debugOutput) {
+            debugOutput.innerHTML += `<div>${message}</div>`;
+            debugOutput.scrollTop = debugOutput.scrollHeight;
+        }
+    };
+}
+</script>
+</body>
+</html>

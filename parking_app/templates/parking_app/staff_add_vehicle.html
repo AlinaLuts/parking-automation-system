@@ -1,0 +1,443 @@
+<!-- parking_app/templates/parking_app/staff_add_vehicle.html -->
+{% extends 'parking_app/base.html' %}
+
+{% block title %}Додати автомобіль{% endblock %}
+
+{% block content %}
+<div class="vehicles-container">
+    <div class="vehicles-grid">
+        <!-- Ліва колонка: форма додавання -->
+        <div class="form-card">
+            <div class="card-header-custom">
+                <h2 class="card-title">
+                    <span class="icon"></span> 
+                    Додати новий автомобіль
+                </h2>
+                <p class="card-subtitle">Заповніть форму для реєстрації вашого транспортного засобу</p>
+            </div>
+            <div class="card-body-custom">
+                {% if error %}
+                    <div class="alert alert-error">
+                        <span class="alert-icon">⚠️</span>
+                        {{ error }}
+                    </div>
+                {% endif %}
+                
+                <form method="post" class="vehicle-form">
+                    {% csrf_token %}
+                    
+                    <div class="form-group-custom">
+                        <label for="plate_number" class="form-label-custom">
+                            <span class="label-icon"></span>
+                            Номерний знак <span class="required">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-input-custom" 
+                               id="plate_number"
+                               name="plate_number" 
+                               value="{{ plate_number|default:'' }}"
+                               placeholder="АА1234ВВ" 
+                               required
+                               pattern="[А-ЯA-Z0-9\s-]+"
+                               title="Введіть номер автомобіля (літери та цифри)"
+                               autocomplete="off">
+                        <div class="input-hint">Введіть номер, можна українською або латиницею</div>
+                    </div>
+                    
+                    <div class="form-group-custom">
+                        <label for="model" class="form-label-custom">
+                            <span class="label-icon"></span>
+                            Модель автомобіля <span class="required">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-input-custom" 
+                               id="model"
+                               name="model" 
+                               value="{{ model|default:'' }}"
+                               placeholder="Наприклад: Toyota Camry, Tesla Model 3" 
+                               required
+                               autocomplete="off">
+                        <div class="input-hint">Вкажіть марку та модель автомобіля</div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <a href="{% url 'parking_app:dashboard' %}" class="btn-secondary-custom">
+                            <span class="btn-icon">←</span>
+                            Скасувати
+                        </a>
+                        <button type="submit" class="btn-primary-custom">
+                            <span class="btn-icon"></span>
+                            Додати автомобіль
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Права колонка: поточні автомобілі -->
+        <div class="list-card">
+            <div class="card-header-custom">
+                <h2 class="card-title">
+                    <span class="icon"></span> 
+                    Ваші автомобілі
+                </h2>
+                <p class="card-subtitle">Всього: {{ my_vehicles|length }} шт.</p>
+            </div>
+            <div class="card-body-custom">
+                {% if my_vehicles %}
+                    <div class="vehicles-list">
+                        {% for vehicle in my_vehicles %}
+                        <div class="vehicle-item">
+                            <div class="vehicle-icon">
+                                🚘
+                            </div>
+                            <div class="vehicle-info">
+                                <div class="vehicle-plate">{{ vehicle.number_plate }}</div>
+                                <div class="vehicle-model">{{ vehicle.model|default:"Модель не вказано" }}</div>
+                            </div>
+                            <div class="vehicle-badge">
+                                <span class="badge-custom badge-staff">співробітник</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">🚗</div>
+                        <h3>У вас ще немає автомобілів</h3>
+                        <p>Додайте свій перший автомобіль за допомогою форми ліворуч</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+<style>
+    .vehicles-container {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .vehicles-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+    
+    @media (max-width: 900px) {
+        .vehicles-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+    }
+    
+    /* Загальні стилі для карток */
+    .form-card, .list-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 30px rgba(255, 140, 66, 0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid #ffefdf;
+    }
+    
+    .form-card:hover, .list-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(255, 140, 66, 0.2);
+    }
+    
+    .card-header-custom {
+        background: linear-gradient(135deg, #ff8c42, #f75510);
+        padding: 24px 28px;
+        color: white;
+    }
+    
+    .card-title {
+        margin: 0 0 6px 0;
+        font-size: 1.6rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .card-title .icon {
+        font-size: 1.8rem;
+    }
+    
+    .card-subtitle {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 0.9rem;
+    }
+    
+    .card-body-custom {
+        padding: 28px;
+    }
+    
+    /* Форма */
+    .vehicle-form {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+    
+    .form-group-custom {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .form-label-custom {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .label-icon {
+        font-size: 1.1rem;
+    }
+    
+    .required {
+        color: #f75510;
+        margin-left: 4px;
+    }
+    
+    .form-input-custom {
+        padding: 14px 16px;
+        border: 2px solid #ffefdf;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #fefefe;
+        font-family: 'Courier New', monospace;
+        font-weight: 500;
+    }
+    
+    .form-input-custom:focus {
+        outline: none;
+        border-color: #ff8c42;
+        box-shadow: 0 0 0 3px rgba(255, 140, 66, 0.2);
+        background: white;
+    }
+    
+    .input-hint {
+        font-size: 0.75rem;
+        color: #6c757d;
+        margin-top: 4px;
+    }
+    
+    /* Кнопки */
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+        margin-top: 10px;
+    }
+    
+    .btn-primary-custom, .btn-secondary-custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        border: none;
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #ff8c42, #f75510);
+        color: white;
+        box-shadow: 0 4px 12px rgba(247, 85, 16, 0.25);
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(247, 85, 16, 0.35);
+    }
+    
+    .btn-secondary-custom {
+        background: white;
+        color: #f75510;
+        border: 2px solid #ff8c42;
+    }
+    
+    .btn-secondary-custom:hover {
+        background: #fff5eb;
+        transform: translateY(-2px);
+    }
+    
+    .btn-icon {
+        font-size: 1rem;
+    }
+    
+    /* Список автомобілів */
+    .vehicles-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .vehicle-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 20px;
+        background: #fffbf5;
+        border-radius: 16px;
+        transition: all 0.3s ease;
+        border: 1px solid #ffefdf;
+    }
+    
+    .vehicle-item:hover {
+        background: #fff8f0;
+        transform: translateX(4px);
+        border-color: #ffd4ae;
+    }
+    
+    .vehicle-icon {
+        font-size: 2.2rem;
+    }
+    
+    .vehicle-info {
+        flex: 1;
+    }
+    
+    .vehicle-plate {
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: #2c3e50;
+    
+        letter-spacing: 1px;
+    }
+    
+    .vehicle-model {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 4px;
+    }
+    
+    .badge-custom {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 30px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+    
+    .badge-staff {
+        background: linear-gradient(135deg, #ff8c42, #f75510);
+        color: white;
+    }
+    
+    /* Порожній стан */
+    .empty-state {
+        text-align: center;
+        padding: 48px 24px;
+    }
+    
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+    
+    .empty-state h3 {
+        color: #2c3e50;
+        margin-bottom: 8px;
+    }
+    
+    .empty-state p {
+        color: #6c757d;
+    }
+    
+    /* Повідомлення про помилку */
+    .alert-error {
+        background: linear-gradient(135deg, #fff5f5, #ffeaea);
+        border-left: 4px solid #e74c3c;
+        padding: 14px 18px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #c0392b;
+        font-weight: 500;
+    }
+    
+    .alert-icon {
+        font-size: 1.2rem;
+    }
+    
+    /* Інформаційна картка */
+    .info-card {
+        background: linear-gradient(135deg, #fff9f0, #fff4e8);
+        border-radius: 20px;
+        padding: 24px 28px;
+        border: 1px solid #ffe0c0;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+    }
+    
+    .info-item-custom {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .info-icon {
+        font-size: 1.8rem;
+    }
+    
+    .info-content h4 {
+        margin: 0 0 6px 0;
+        color: #f75510;
+        font-size: 1rem;
+    }
+    
+    .info-content p {
+        margin: 0;
+        color: #6c757d;
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+    
+    @media (max-width: 600px) {
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .btn-primary-custom, .btn-secondary-custom {
+            justify-content: center;
+        }
+        
+        .vehicle-item {
+            flex-wrap: wrap;
+        }
+        
+        .vehicle-badge {
+            width: 100%;
+            text-align: center;
+        }
+        
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

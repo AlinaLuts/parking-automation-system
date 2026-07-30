@@ -1,0 +1,55 @@
+<!-- parking_app/templates/parking_app/staff_edit_vehicle.html -->
+{% extends 'parking_app/base.html' %}
+
+{% block title %}Редагувати автомобіль{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Редагувати автомобіль</h2>
+    
+    {% if error %}
+        <div class="error" style="background: #ffeaea; color: #e74c3c; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #e74c3c;">
+            <strong>Помилка:</strong> {{ error }}
+        </div>
+    {% endif %}
+    
+    <form method="post" style="max-width: 500px;">
+        {% csrf_token %}
+        
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Поточний номерний знак:</label>
+            <input type="text" 
+                   value="{{ plate_number }}"
+                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background: #f5f5f5;"
+                   disabled>
+            <input type="hidden" name="old_plate_number" value="{{ old_plate_number|default:plate_number }}">
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Новий номерний знак:</label>
+            <input type="text" 
+                   name="new_plate_number" 
+                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;"
+                   placeholder="АА1234ВВ" 
+                   required
+                   pattern="[А-ЯA-Z]{2}\d{4}[А-ЯA-Z]{2}"
+                   title="Формат: АА1234ВВ (2 букви, 4 цифри, 2 букви)">
+            <small style="color: #666; font-size: 0.9em;">Формат: АА1234ВВ</small>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Нова модель автомобіля:</label>
+            <input type="text" 
+                   name="new_model" 
+                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;"
+                   placeholder="Toyota Camry" 
+                   required>
+        </div>
+        
+        <div style="margin-top: 25px; display: flex; gap: 10px;">
+            <button type="submit" class="btn" style="flex: 1;">Зберегти зміни</button>
+            <a href="{% url 'parking_app:dashboard' %}" class="btn" style="background: #95a5a6; flex: 1; text-align: center;">❌ Скасувати</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

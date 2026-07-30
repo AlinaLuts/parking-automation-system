@@ -1,0 +1,705 @@
+{% extends 'parking_app/base.html' %}
+{% load static %}
+
+{% block title %}Активні парковки{% endblock %}
+
+{% block content %}
+<style>
+    /* додаткові стилі для сторінки активних парковок */
+    .search-section {
+        margin-bottom: 2rem;
+    }
+    
+    .search-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 8px 24px rgba(255, 140, 66, 0.12);
+        border: 1px solid #ffddc1;
+    }
+    
+    .search-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #f75510;
+        margin-bottom: 0.5rem;
+    }
+    
+    .search-subtitle {
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+        padding-left: 1rem;
+        border-left: 3px solid #ff8c42;
+    }
+    
+    .search-input-group {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .search-input-group input {
+        flex: 1;
+        padding: 20px 24px;
+        font-size: 1.8rem;
+        font-weight: 700;
+        border: 3px solid #ffddc1;
+        border-radius: 16px;
+        transition: all 0.3s ease;
+        font-family: 'Courier New', monospace;
+        background: #fefefe;
+        text-align: left;
+        letter-spacing: 2px;
+        color: #2c3e4e;
+    }
+    
+    .search-input-group input:focus {
+        outline: none;
+        border-color: #ff8c42;
+        box-shadow: 0 0 0 4px rgba(255, 140, 66, 0.3);
+        background: white;
+    }
+    
+    .search-input-group input::placeholder {
+        font-size: 1.2rem;
+        font-weight: 400;
+        color: #bbb;
+        letter-spacing: normal;
+    }
+    
+    .btn-search {
+        background: linear-gradient(135deg, #ff8c42, #f75510);
+        border: none;
+        padding: 20px 36px;
+        border-radius: 16px;
+        color: white;
+        font-weight: 700;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 8px rgba(247, 85, 16, 0.25);
+    }
+    
+    .btn-search:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(247, 85, 16, 0.35);
+    }
+    
+    /* картка результату */
+    .result-card {
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 12px 32px rgba(255, 140, 66, 0.15);
+        margin-top: 1rem;
+        animation: fadeSlideUp 0.4s ease;
+        border: 1px solid #ffddc1;
+    }
+    
+    @keyframes fadeSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .card-header-orange {
+        background: linear-gradient(135deg, #ff8c42, #f75510);
+        padding: 1.4rem 2rem;
+        color: white;
+    }
+    
+    .card-header-orange h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.3rem;
+    }
+    
+    .plate-badge {
+        font-family: 'Courier New', monospace;
+        font-size: 1.1rem;
+        background: rgba(255, 255, 255, 0.2);
+        display: inline-block;
+        padding: 0.2rem 1rem;
+        border-radius: 30px;
+        letter-spacing: 1px;
+    }
+    
+    .result-body {
+        padding: 2rem;
+    }
+    
+    /* інформаційна сітка */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .info-item {
+        background: #fffbf5;
+        border-radius: 18px;
+        padding: 1.2rem;
+        border: 1px solid #ffefdf;
+        transition: all 0.2s ease;
+    }
+    
+    .info-item:hover {
+        border-color: #ffd4ae;
+        transform: translateY(-2px);
+    }
+    
+    .info-item .label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #ff8c42;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .info-item .value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #2c3e4e;
+    }
+    
+    .info-item .value-timer {
+        color: #f75510;
+        font-family: monospace;
+        font-size: 1.3rem;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 0.3rem 1rem;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .status-paid {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-unpaid {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .status-free {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    /* блок оплати */
+    .payment-block {
+        background: linear-gradient(135deg, #fff9f0, #fff4e8);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        border: 1px solid #ffe0c0;
+    }
+    
+    .payment-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #b45f06;
+        margin-bottom: 1.2rem;
+    }
+    
+    .payment-flex {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 1.5rem;
+    }
+    
+    .payment-details-list {
+        flex: 2;
+    }
+    
+    .payment-details-list p {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1rem;
+        padding: 0.6rem 0;
+        margin: 0;
+        border-bottom: 1px dashed #ffddb0;
+    }
+    
+    .payment-details-list strong {
+        color: #4a5568;
+        min-width: 160px;
+    }
+    
+    .payment-total-card {
+        flex: 1;
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        min-width: 180px;
+        border: 1px solid #ffdbb5;
+    }
+    
+    .total-price {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #f75510;
+        margin-bottom: 0.8rem;
+    }
+    
+    .info-footnote {
+        background: #fef5e8;
+        border-radius: 14px;
+        padding: 1rem 1.2rem;
+        font-size: 0.85rem;
+        color: #8b6b42;
+        border-left: 4px solid #ff8c42;
+        margin-top: 1rem;
+    }
+    
+    .error-message {
+        background: #fff5f5;
+        border: 1px solid #ffdddd;
+        border-radius: 20px;
+        padding: 1.5rem;
+        color: #c0392b;
+        text-align: center;
+        font-weight: 500;
+    }
+    
+    .loading-state {
+        background: white;
+        border-radius: 24px;
+        padding: 3rem;
+        text-align: center;
+        color: #ff8c42;
+        border: 1px solid #ffddc1;
+    }
+    
+    .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid #ffefdf;
+        border-top-color: #ff8c42;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 1rem;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .update-flash {
+        animation: flashBg 0.5s ease;
+    }
+    
+    @keyframes flashBg {
+        0% { background-color: #fff5e8; }
+        50% { background-color: #ffe6d0; }
+        100% { background-color: #fff5e8; }
+    }
+    
+    @media (max-width: 640px) {
+        .result-body {
+            padding: 1.2rem;
+        }
+        .payment-flex {
+            flex-direction: column;
+        }
+        .payment-total-card {
+            width: 100%;
+        }
+        .search-input-group {
+            flex-direction: column;
+        }
+        .btn-search {
+            justify-content: center;
+        }
+        .search-input-group input {
+            font-size: 1.4rem;
+            padding: 16px 20px;
+        }
+        .payment-details-list p {
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+        .payment-details-list strong {
+            min-width: auto;
+        }
+    }
+</style>
+
+<div class="search-section">
+    <div class="search-card">
+        <div class="search-title">
+            Активні парковки
+        </div>
+        <div class="search-subtitle">
+            Введіть номер автомобіля для перевірки інформації та суми до сплати
+        </div>
+        <div class="search-input-group">
+            <input type="text" id="plateInput" placeholder="Номер автомобіля (наприклад: АА1234ВВ)" autocomplete="off">
+            <button class="btn-search" id="searchBtn">
+                Перевірити
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="resultContainer">
+    <div class="loading-state">
+        <div class="spinner"></div>
+        <div>Введіть номер та натисніть "Перевірити"</div>
+    </div>
+</div>
+
+<script>
+    let refreshTimer = null;
+    let currentPlate = null;
+    let dynamicElements = {};
+    
+    const resultContainer = document.getElementById('resultContainer');
+    const plateInput = document.getElementById('plateInput');
+    const searchBtn = document.getElementById('searchBtn');
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    function formatDateTime(dateStr) {
+        if (!dateStr) return '—';
+        const d = new Date(dateStr);
+        return d.toLocaleString('uk-UA', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+    
+    function getStatusInfo(userType, needPayment) {
+        if (userType === 'staff') return { text: 'Безкоштовно (співробітник)', class: 'status-free' };
+        if (userType === 'free_guest') return { text: 'Безкоштовно (гість)', class: 'status-free' };
+        if (!needPayment) return { text: 'Оплачено', class: 'status-paid' };
+        return { text: 'Очікує оплати', class: 'status-unpaid' };
+    }
+    
+    function getUserTypeTitle(type) {
+        const map = {
+            'staff': 'Співробітник',
+            'free_guest': 'Гість (безкоштовно)',
+            'paid_guest': 'Гість (платно)'
+        };
+        return map[type] || 'Відвідувач';
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    function renderParkingData(data) {
+        const userType = data.user_type;
+        const needPayment = data.payment_info?.need_payment || false;
+        const status = getStatusInfo(userType, needPayment);
+        const plate = data.vehicle_plate;
+        const owner = data.user_name || 'Не вказано';
+        const entryTime = formatDateTime(data.entry_time);
+        const duration = data.duration?.formatted || '0 хв';
+        
+        let paymentHtml = '';
+        
+        if (userType === 'paid_guest') {
+            const freeTotal = data.free_minutes?.total || 0;
+            const freeUsed = data.free_minutes?.used || 0;
+            const freeRemaining = data.free_minutes?.remaining || 0;
+            const paidMinutes = data.payment_info?.paid_minutes || 0;
+            const roundedPaid = data.payment_info?.rounded_paid_minutes || 0;
+            const priceHour = data.payment_info?.price_per_hour || 30;
+            const currentPrice = data.payment_info?.current_price || 0;
+            
+            paymentHtml = `
+                <div class="payment-block">
+                    <div class="payment-title">
+                        Розрахунок вартості
+                    </div>
+                    <div class="payment-flex">
+                        <div class="payment-details-list">
+                            <p><strong>Безкоштовний ліміт:</strong> ${freeTotal} хв</p>
+                            <p><strong>Використано безкоштовно:</strong> ${freeUsed} хв</p>
+                            <p><strong>Залишилось безкоштовно:</strong> <span id="freeRemainingVal">${freeRemaining}</span> хв</p>
+                            <p><strong>Платних хвилин:</strong> <span id="paidMinutesVal">${paidMinutes}</span> хв</p>
+                            <p><strong>Округлено до 5 хв:</strong> <span id="roundedVal">${roundedPaid}</span> хв</p>
+                            <p><strong>Ціна за годину:</strong> ${priceHour} грн</p>
+                        </div>
+                        <div class="payment-total-card">
+                            <div class="total-price" id="totalPriceVal">${currentPrice.toFixed(2)} грн</div>
+                            <div class="status-badge ${status.class}">${status.text}</div>
+                            ${needPayment ? '<div style="margin-top: 12px; font-size:0.8rem; color:#c0392b;">Потрібна оплата</div>' : '<div style="margin-top: 12px; font-size:0.8rem; color:#27ae60;">Парковка оплачена</div>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            let freeMessage = '';
+            if (userType === 'staff') freeMessage = 'Паркування для співробітників — безкоштовне';
+            else if (userType === 'free_guest') freeMessage = 'Безкоштовний гість, оплата не потрібна';
+            else freeMessage = data.additional_info || 'Паркування без додаткової оплати';
+            
+            paymentHtml = `
+                <div class="payment-block">
+                    <div class="payment-title">
+                        Інформація про парковку
+                    </div>
+                    <div class="payment-flex">
+                        <div class="payment-details-list">
+                            <p>${freeMessage}</p>
+                        </div>
+                        <div class="payment-total-card">
+                            <div class="total-price">0.00 грн</div>
+                            <div class="status-badge ${status.class}">${status.text}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        const html = `
+            <div class="result-card" id="resultCard">
+                <div class="card-header-orange">
+                    <h2>${getUserTypeTitle(userType)}</h2>
+                    <div class="plate-badge">Номер: ${plate}</div>
+                </div>
+                <div class="result-body">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="label">Власник</div>
+                            <div class="value">${escapeHtml(owner)}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="label">Час заїзду</div>
+                            <div class="value">${entryTime}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="label">Тривалість</div>
+                            <div class="value value-timer" id="durationValue">${duration}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="label">Статус</div>
+                            <div class="value">
+                                <span class="status-badge ${status.class}">${status.text}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${paymentHtml}
+                    
+                    
+                </div>
+            </div>
+        `;
+        
+        resultContainer.innerHTML = html;
+        
+        // зберігаємо посилання на динамічні елементи
+        if (userType === 'paid_guest') {
+            dynamicElements = {
+                durationSpan: document.getElementById('durationValue'),
+                freeRemainingSpan: document.getElementById('freeRemainingVal'),
+                paidMinutesSpan: document.getElementById('paidMinutesVal'),
+                roundedSpan: document.getElementById('roundedVal'),
+                totalPriceSpan: document.getElementById('totalPriceVal')
+            };
+        } else {
+            dynamicElements = {
+                durationSpan: document.getElementById('durationValue')
+            };
+        }
+    }
+    
+    function updateDynamicData(updateData) {
+        if (!updateData) return;
+        
+        if (dynamicElements.durationSpan && updateData.duration?.formatted) {
+            dynamicElements.durationSpan.innerText = updateData.duration.formatted;
+        }
+        
+        if (updateData.user_type === 'paid_guest') {
+            if (dynamicElements.freeRemainingSpan && updateData.free_minutes_remaining !== undefined) {
+                dynamicElements.freeRemainingSpan.innerText = updateData.free_minutes_remaining;
+            }
+            if (dynamicElements.paidMinutesSpan && updateData.paid_minutes !== undefined) {
+                dynamicElements.paidMinutesSpan.innerText = updateData.paid_minutes;
+            }
+            if (dynamicElements.roundedSpan && updateData.rounded_paid_minutes !== undefined) {
+                dynamicElements.roundedSpan.innerText = updateData.rounded_paid_minutes;
+            }
+            if (dynamicElements.totalPriceSpan && updateData.current_price !== undefined) {
+                dynamicElements.totalPriceSpan.innerText = `${updateData.current_price.toFixed(2)} грн`;
+                if (updateData.current_price > 0 && updateData.need_payment) {
+                    dynamicElements.totalPriceSpan.style.color = '#c0392b';
+                } else {
+                    dynamicElements.totalPriceSpan.style.color = '#f75510';
+                }
+            }
+            
+            const statusBadge = document.querySelector('.payment-total-card .status-badge');
+            if (statusBadge && updateData.need_payment !== undefined) {
+                const needPay = updateData.need_payment;
+                const newText = needPay ? 'Очікує оплати' : 'Оплачено';
+                const newClass = needPay ? 'status-unpaid' : 'status-paid';
+                statusBadge.innerText = newText;
+                statusBadge.className = `status-badge ${newClass}`;
+                
+                const warningDiv = document.querySelector('.payment-total-card div:last-child');
+                if (warningDiv && (warningDiv.innerHTML.includes('⚠️Потрібна оплата') || warningDiv.innerHTML.includes('Парковка оплачена'))) {
+                    if (needPay) {
+                        warningDiv.innerHTML = '<div style="margin-top: 12px; font-size:0.8rem; color:#c0392b;">Потрібна оплата</div>';
+                    } else {
+                        warningDiv.innerHTML = '<div style="margin-top: 12px; font-size:0.8rem; color:#27ae60;">Парковка оплачена</div>';
+                    }
+                }
+            }
+        }
+        
+        const card = document.getElementById('resultCard');
+        if (card) {
+            card.classList.add('update-flash');
+            setTimeout(() => card.classList.remove('update-flash'), 500);
+        }
+    }
+    
+    function showError(message) {
+        resultContainer.innerHTML = `
+            <div class="error-message">
+                ${escapeHtml(message)}
+            </div>
+        `;
+        stopRefresh();
+    }
+    
+    function showLoading(message = 'Завантаження даних...') {
+        resultContainer.innerHTML = `
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <div>${escapeHtml(message)}</div>
+            </div>
+        `;
+    }
+    
+    function stopRefresh() {
+        if (refreshTimer) {
+            clearInterval(refreshTimer);
+            refreshTimer = null;
+        }
+    }
+    
+    function loadParkingData(plate) {
+        showLoading('Пошук інформації про автомобіль...');
+        
+        fetch('/parking/api/active-parking/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ plate_number: plate })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                renderParkingData(data);
+                startRefresh(plate);
+            } else {
+                showError(data.message || 'Автомобіль не знайдено або парковка неактивна');
+                stopRefresh();
+            }
+        })
+        .catch(err => {
+            console.error('Помилка:', err);
+            showError('Помилка з\'єднання з сервером. Спробуйте пізніше.');
+            stopRefresh();
+        });
+    }
+    
+    function refreshPriceData(plate) {
+        fetch('/parking/api/recalculate-price/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ plate_number: plate })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                updateDynamicData(data);
+            } else if (data.message && (data.message.includes('не знайдено') || data.message.includes('неактивна'))) {
+                loadParkingData(plate);
+            }
+        })
+        .catch(e => console.warn('Оновлення даних:', e));
+    }
+    
+    function startRefresh(plate) {
+        stopRefresh();
+        refreshTimer = setInterval(() => {
+            if (plate) {
+                refreshPriceData(plate);
+            }
+        }, 30000);
+    }
+    
+    function performSearch() {
+        const plate = plateInput.value.trim().toUpperCase();
+        if (!plate) {
+            showError('Будь ласка, введіть номер автомобіля');
+            return;
+        }
+        stopRefresh();
+        currentPlate = plate;
+        loadParkingData(plate);
+    }
+    
+    searchBtn.addEventListener('click', performSearch);
+    plateInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') performSearch();
+    });
+    
+    window.addEventListener('beforeunload', function() {
+        if (refreshTimer) clearInterval(refreshTimer);
+    });
+</script>
+{% endblock %}

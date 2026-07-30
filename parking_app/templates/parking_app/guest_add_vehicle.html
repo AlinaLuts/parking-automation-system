@@ -1,0 +1,178 @@
+<!-- parking_app/templates/parking_app/guest_add_vehicle.html -->
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Додати автомобіль - Паркінг</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2E7D32;
+            margin-top: 0;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        .form-note {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2E7D32;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            margin-top: 15px;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .example {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 Додати автомобіль</h1>
+        
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="plate">Номерний знак</label>
+                <input type="text" 
+                       id="plate" 
+                       name="plate" 
+                       placeholder="AA1234BB"
+                       required
+                       pattern="[A-ZА-Я0-9]{2,10}"
+                       title="Тільки великі літери та цифри">
+                <div class="form-note">Наприклад: АА1234ВВ, ВС5678АК</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="model">Модель автомобіля (необов'язково)</label>
+                <input type="text" 
+                       id="model" 
+                       name="model" 
+                       placeholder="Toyota Camry, Volkswagen Golf">
+                <div class="form-note">Марка та модель вашого автомобіля</div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+                Додати автомобіль
+            </button>
+        </form>
+        
+        <div class="example">
+            <p><strong>Примітка:</strong></p>
+            <p>• Автомобіль буде прив'язаний до вашого облікового запису</p>
+            <p>• Ви зможете використовувати його для заїзду/виїзду</p>
+            <p>• Один автомобіль може бути прив'язаний тільки до одного користувача</p>
+        </div>
+        
+        {% if user_type == 'guest' %}
+        <a href="{% url 'parking_app:guest_dashboard' %}" class="btn btn-secondary">
+            ← Назад до панелі
+        </a>
+        {% else %}
+        <a href="{% url 'parking_app:visitor_dashboard' %}" class="btn btn-secondary">
+            ← Назад до панелі
+        </a>
+        {% endif %}
+    </div>
+</body>
+</html>

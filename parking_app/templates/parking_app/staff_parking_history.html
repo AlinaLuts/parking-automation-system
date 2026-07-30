@@ -1,0 +1,95 @@
+<!-- parking_app/templates/parking_app/staff_parking_history.html -->
+{% extends 'parking_app/base.html' %}
+
+{% block title %}Історія паркувань{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0;">Історія паркувань</h2>
+        <a href="{% url 'parking_app:dashboard' %}" class="btn" style="background: #7f8c8d;">← Назад до панелі</a>
+    </div>
+    
+    <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+        <form method="get" style="display: flex; gap: 10px; align-items: center;">
+            <label style="font-weight: bold;">Показати за останні:</label>
+            <select name="days" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="7" {% if days_back == "7" or days_back == 7 %}selected{% endif %}>7 днів</option>
+                <option value="30" {% if days_back == "30" or days_back == 30 %}selected{% endif %}>30 днів</option>
+                <option value="90" {% if days_back == "90" or days_back == 90 %}selected{% endif %}>90 днів</option>
+                <option value="180" {% if days_back == "180" or days_back == 180 %}selected{% endif %}>6 місяців</option>
+                <option value="365" {% if days_back == "365" or days_back == 365 %}selected{% endif %}>Рік</option>
+            </select>
+            <button type="submit" class="btn" style="padding: 8px 15px;">Показати</button>
+        </form>
+    </div>
+    
+    {% if parking_history %}
+        <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <thead>
+                <tr style="background: #f5f5f5;">
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Автомобіль</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Заїзд</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Виїзд</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Тривалість</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in parking_history %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px;"><strong>{{ record.vehicle_plate }}</strong></td>
+                    <td style="padding: 12px;">
+                        {% if record.entry_time %}
+                            {{ record.entry_time|date:"d.m.Y H:i" }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td style="padding: 12px;">
+                        {% if record.exit_time %}
+                            {{ record.exit_time|date:"d.m.Y H:i" }}
+                        {% else %}
+                            <em>На паркінгу</em>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 12px;">
+    {% if record.duration_hours is not None and record.duration_minutes is not None %}
+        {{ record.duration_hours|stringformat:"02d" }}:{{ record.duration_minutes|stringformat:"02d" }}
+    {% else %}
+        —
+    {% endif %}
+</td>
+                    <td style="padding: 12px;">
+                        {% if record.parking_type == 'На паркінгу' %}
+                            <span style="color: #27ae60; font-weight: bold;">● {{ record.parking_type }}</span>
+                        {% elif record.parking_type == 'Завершено' %}
+                            <span style="color: #7f8c8d;">● {{ record.parking_type }}</span>
+                        {% else %}
+                            <span style="color: #3498db;">● {{ record.parking_type|default:"—" }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+    {% else %}
+        <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+            <p style="font-size: 1.2em; margin-bottom: 20px;">Історія паркувань відсутня</p>
+            <p>Ви ще не користувались паркінгом за останні {{ days_back }} днів</p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    tr:hover {
+        background-color: #f9f9f9;
+    }
+    
+    select:focus {
+        border-color: #3498db;
+        outline: none;
+    }
+</style>
+{% endblock %}

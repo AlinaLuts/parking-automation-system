@@ -1,0 +1,135 @@
+<!-- parking_app/templates/parking_app/admin_financial_report.html -->
+{% extends 'parking_app/base.html' %}
+{% block title %}Фінансова статистика{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="margin-bottom: 30px;">
+        <a href="{% url 'parking_app:dashboard' %}" style="color: #667eea; text-decoration: none; font-weight: 500;">
+            ← Назад до панелі
+        </a>
+        <h1 style="margin-top: 10px; color: #2c3e50;">Фінансова статистика</h1>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="card" style="margin-bottom: 30px;">
+        <h3 style="color: #2c3e50; margin-bottom: 20px;">Виберіть період</h3>
+        <form method="get">
+            <div style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap;">
+                <div style="flex: 1;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #555;">Дата з</label>
+                    <input type="date" name="start_date" value="{{ filters.start_date }}" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 8px;">
+                </div>
+                <div style="flex: 1;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #555;">Дата по</label>
+                    <input type="date" name="end_date" value="{{ filters.end_date }}" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 8px;">
+                </div>
+                <div>
+                    <button type="submit" style="padding: 10px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;">
+                        Застосувати
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Основная статистика -->
+    {% if report %}
+    <div class="card" style="margin-bottom: 30px;">
+        <h3 style="color: #2c3e50; margin-bottom: 20px;">Загальна статистика</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div style="text-align: center; background: #f0f9f0; padding: 25px; border-radius: 8px;">
+                <div style="font-size: 14px; color: #27ae60; font-weight: 500;">Сесій паркування</div>
+                <div style="font-size: 36px; font-weight: bold; color: #2c3e50; margin: 10px 0;">{{ report.0 }}</div>
+            </div>
+            <div style="text-align: center; background: #fff8e1; padding: 25px; border-radius: 8px;">
+                <div style="font-size: 14px; color: #f39c12; font-weight: 500;">Загальний дохід</div>
+                <div style="font-size: 36px; font-weight: bold; color: #2c3e50; margin: 10px 0;">{{ report.1|floatformat:2 }} грн</div>
+            </div>
+            <div style="text-align: center; background: #f0f7ff; padding: 25px; border-radius: 8px;">
+                <div style="font-size: 14px; color: #3498db; font-weight: 500;">Середній чек</div>
+                <div style="font-size: 36px; font-weight: bold; color: #2c3e50; margin: 10px 0;">{{ report.2|floatformat:2 }} грн</div>
+            </div>
+            <div style="text-align: center; background: #ffeaea; padding: 25px; border-radius: 8px;">
+                <div style="font-size: 14px; color: #e74c3c; font-weight: 500;">Середня тривалість</div>
+                <div style="font-size: 36px; font-weight: bold; color: #2c3e50; margin: 10px 0;">{{ report.3|floatformat:1 }} год</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Статистика по дням -->
+    {% if daily_stats %}
+    <div class="card">
+        <h3 style="color: #2c3e50; margin-bottom: 20px;">Статистика по днях</h3>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f8f9fa;">
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #555;">Дата</th>
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #555;">Кількість сесій</th>
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #555;">Дохід</th>
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #555;">Середній чек</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day in daily_stats %}
+                    <tr style="border-bottom: 1px solid #e1e5e9;">
+                        <td style="padding: 15px;">
+                            <div style="font-weight: 500; color: #2c3e50;">{{ day.0|date:"d.m.Y" }}</div>
+                        </td>
+                        <td style="padding: 15px;">
+                            <div style="color: #2c3e50; font-weight: 500;">{{ day.1 }}</div>
+                        </td>
+                        <td style="padding: 15px;">
+                            <div style="font-weight: bold; color: #e74c3c;">{{ day.2|floatformat:2 }} грн</div>
+                        </td>
+                        <td style="padding: 15px;">
+                            <div style="color: #3498db; font-weight: 500;">{{ day.3|floatformat:2 }} грн</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- График (заглушка) -->
+        <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+            <h4 style="color: #2c3e50; margin-bottom: 15px;">Графік доходів</h4>
+            <div style="height: 200px; display: flex; align-items: flex-end; justify-content: space-around; gap: 10px; padding: 20px;">
+                {% for day in daily_stats|slice:":7" %}
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div style="width: 40px; background: linear-gradient(to top, #667eea, #764ba2); border-radius: 4px 4px 0 0;"
+                         title="{{ day.2 }} грн"
+                         data-value="{{ day.2 }}">
+                    </div>
+                    <div style="margin-top: 10px; font-size: 12px; color: #777; transform: rotate(-45deg);">{{ day.0|date:"d.m" }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <script>
+        // Анимируем столбцы графика
+        document.addEventListener('DOMContentLoaded', function() {
+            const columns = document.querySelectorAll('[data-value]');
+            columns.forEach(col => {
+                const value = parseFloat(col.dataset.value);
+                const maxHeight = 150; // максимальная высота в пикселях
+                const maxValue = Math.max(...Array.from(columns).map(c => parseFloat(c.dataset.value)));
+                
+                if (maxValue > 0) {
+                    const height = (value / maxValue) * maxHeight;
+                    col.style.height = height + 'px';
+                }
+            });
+        });
+        </script>
+        {% else %}
+        <div style="padding: 40px; text-align: center; color: #777;">
+             За вибраний період даних немає
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

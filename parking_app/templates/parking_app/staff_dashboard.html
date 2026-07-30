@@ -1,0 +1,106 @@
+<!-- parking_app/templates/parking_app/staff_dashboard.html -->
+{% extends 'parking_app/base.html' %}
+
+{% block title %}Панель працівника{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Панель працівника</h2>
+    <p>Ласкаво просимо, {{ first_name }} {{ last_name }}!</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 20px 0;">
+        <div style="background: #e8f4f8; padding: 20px; border-radius: 8px; text-align: center;">
+            <h3>Мої автомобілі</h3>
+            <p style="font-size: 24px; font-weight: bold;">{{ my_vehicles|length }}</p>
+        </div>
+        <div style="background: #e8f8f0; padding: 20px; border-radius: 8px; text-align: center;">
+            <h3>Активні запрошення</h3>
+            <p style="font-size: 24px; font-weight: bold;">{{ active_invitations|length }}</p>
+        </div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0;">Мої автомобілі</h3>
+            <a href="{% url 'parking_app:staff_add_vehicle' %}" style="font-size: 0.9em; color: #3498db;">
+                Додати новий →
+            </a>
+        </div>
+        
+        {% if my_vehicles %}
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <thead>
+                    <tr style="background: #f5f5f5;">
+                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Номерний знак</th>
+                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Модель</th>
+                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Дії</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vehicle in my_vehicles %}
+                    <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ vehicle.number_plate }}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ vehicle.model }}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">
+                            <div style="display: flex; gap: 5px;">
+                                <a href="{% url 'parking_app:staff_edit_vehicle' vehicle.number_plate %}" 
+                                   style="background: #0f3a57; color: white; padding: 5px 10px; border-radius: 3px; text-decoration: none; font-size: 0.9em;">
+                                    Редагувати
+                                </a>
+                                <a href="{% url 'parking_app:staff_delete_vehicle' vehicle.number_plate %}" 
+                                   style="background: #e74c3c; color: white; padding: 5px 10px; border-radius: 3px; text-decoration: none; font-size: 0.9em;">
+                                    Видалити
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>У вас ще немає зареєстрованих автомобілів.</p>
+            <a href="{% url 'parking_app:staff_add_vehicle' %}" class="btn" style="margin-top: 10px;">Додати автомобіль</a>
+        {% endif %}
+    </div>
+    
+    <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3 style="margin: 0;">Активні запрошення</h3>
+        <a href="{% url 'parking_app:staff_invitations' %}" style="font-size: 0.9em; color: #3498db;">
+            Всі запрошення →
+        </a>
+    </div>
+    
+    {% if active_invitations %}
+        <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <thead>
+                <tr style="background: #f5f5f5;">
+                    <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Номер машини</th>
+                    <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Початок</th>
+                    <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Кінець</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invite in active_invitations %}
+                <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ invite.vehicle_number_plate }}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ invite.start_time|date:"H:i d.m.Y" }}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ invite.end_time|date:"H:i d.m.Y" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>У вас немає активних запрошень.</p>
+    {% endif %}
+    
+    <div style="margin-top: 15px; display: flex; gap: 10px;">
+        <a href="{% url 'parking_app:staff_create_invitation' %}" class="btn" style="flex: 1;">Створити запрошення</a>
+        <a href="{% url 'parking_app:staff_invitations' %}" class="btn" style="flex: 1; background: #7f8c8d;">Переглянути історію</a>
+    </div>
+</div>
+</div>
+
+{% endblock %}

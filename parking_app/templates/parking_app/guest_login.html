@@ -1,0 +1,255 @@
+<!-- parking_app/templates/parking_app/guest_login.html -->
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вхід - Паркінг</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .login-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-header h2 {
+            color: #2E7D32;
+            margin-bottom: 10px;
+        }
+        
+        .login-header p {
+            color: #666;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .btn-login:hover {
+            background: #2E7D32;
+        }
+        
+        .password-toggle {
+            text-align: right;
+            margin-top: 5px;
+        }
+        
+        .password-toggle a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .password-toggle a:hover {
+            text-decoration: underline;
+        }
+        
+        .alert {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .info-box {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .password-field {
+            display: none;
+        }
+        
+        .password-field.show {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    <script>
+        function togglePasswordField() {
+            const passwordField = document.getElementById('password-field');
+            const passwordInput = document.getElementById('password');
+            const showPasswordInput = document.getElementById('show-password');
+            
+            if (passwordField.classList.contains('show')) {
+                passwordField.classList.remove('show');
+                passwordInput.value = '';
+                showPasswordInput.value = 'false';
+            } else {
+                passwordField.classList.add('show');
+                passwordInput.focus();
+                showPasswordInput.value = 'true';
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="login-box">
+        <div class="login-header">
+            <h2>🚗 Вхід до паркінгу</h2>
+            <p>Для гостей та відвідувачів</p>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+        
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="show_password" id="show-password" value="{{ show_password|default:'false' }}">
+            
+            <div class="form-group">
+                <label for="phone">Номер телефону</label>
+                <input type="tel" 
+                       id="phone" 
+                       name="phone" 
+                       placeholder="+380501234567"
+                       value="{{ phone|default:'' }}"
+                       required
+                       pattern="\+380\d{9}">
+            </div>
+            
+            <div class="password-field {% if show_password %}show{% endif %}" id="password-field">
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input type="password" 
+                           id="password" 
+                           name="password" 
+                           placeholder="Введіть пароль"
+                           autocomplete="current-password">
+                    <div class="password-toggle">
+                        <a onclick="togglePasswordField()">Скасувати</a>
+                    </div>
+                </div>
+            </div>
+            
+            {% if not show_password %}
+            <div class="password-toggle">
+                <a onclick="togglePasswordField()">У мене є пароль</a>
+            </div>
+            {% endif %}
+            
+            <button type="submit" class="btn-login">
+                {% if show_password %}
+                    Увійти з паролем
+                {% else %}
+                    Увійти або створити обліковий запис
+                {% endif %}
+            </button>
+        </form>
+        
+        <div class="info-box">
+            <p><strong>Як це працює:</strong></p>
+            <p>1. Введіть номер телефону</p>
+            <p>2. Якщо для вашого облікового запису встановлено пароль - з'явиться поле для введення</p>
+            <p>3. Якщо у вас є активне запрошення - ви гість</p>
+            <p>4. Якщо запрошення немає - ви відвідувач</p>
+            <p>5. Пароль можна додати в налаштуваннях профілю</p>
+        </div>
+        
+        <div class="back-link">
+            <a href="{% url 'parking_app:login' %}">← Працівникам та адміністраторам</a>
+        </div>
+    </div>
+    
+    <script>
+        // Автоматически показываем поле пароля, если нужно
+        document.addEventListener('DOMContentLoaded', function() {
+            const showPassword = "{{ show_password|default:'false' }}" === 'True';
+            if (showPassword) {
+                document.getElementById('password-field').classList.add('show');
+                document.getElementById('show-password').value = 'true';
+            }
+        });
+    </script>
+</body>
+</html>

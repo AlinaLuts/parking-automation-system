@@ -1,0 +1,425 @@
+{% extends 'parking_app/base.html' %}
+{% block title %}Заїзд на паркінг{% endblock %}
+
+{% block content %}
+<div class="container">
+    <a href="{% url 'parking_app:home' %}" style="color: #667eea; text-decoration: none; font-weight: 500;">
+        ← На головну
+    </a>
+    {% csrf_token %}
+    <h1 style="color: #2c3e50; margin-bottom: 20px;">Заїзд на паркінг</h1>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 30px; align-items: flex-start;">
+    <!-- Информация о тарифе -->
+    <div class="card" style="flex: 1; min-width: 300px; max-width: 500px;">
+    <div style="background: #e8f4fc; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #3498db;">
+        <h3 style="margin-top: 0; color: #2c3e50;">Поточний тариф</h3>
+        <div style="font-size: 24px; color: #e74c3c; font-weight: bold; margin: 10px 0;">
+            {{ current_price }} грн/год
+        </div>
+        <p style="color: #555; margin: 0;">
+            • Перші 10 хвилин безкоштовно<br>
+            • Співробітники та запрошені гості безкоштовно
+        </p>
+    </div>
+    
+    <!-- Форма ввода номера -->
+    <div id="form-section">
+        <div class="card">
+            <h3 style="color: #2c3e50; margin-bottom: 15px;">Введіть номер автомобіля</h3>
+            
+            <!-- Поле для номера -->
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="plate-number" 
+                       placeholder="АА1234ВВ" 
+                       style="width: 100%; padding: 15px; font-size: 18px; border: 2px solid #ddd; border-radius: 8px; text-align: center;">
+            </div>
+            
+            <!-- КНОПКИ -->
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button id="check-car-btn" class="btn btn-primary">
+                    Розпізнати номер
+                </button>
+                <button id="submit-btn" class="btn btn-success">
+                    Заїхати
+                </button>
+            </div>
+            
+            <!-- Область для уведомлений -->
+            <div id="notification-area" style="margin-top: 20px;"></div>
+            
+            <!-- Статус датчика -->
+            <div id="sensor-status" style="display: none; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+                <div style="font-size: 24px; margin-bottom: 10px;" id="sensor-icon">🚗</div>
+                <p id="sensor-message" style="margin: 0; font-weight: bold;"></p>
+            </div>
+            
+            <!-- Распознанный номер -->
+            <div id="recognized-message" style="display: none; margin-top: 20px; padding: 15px; background: #d4edda; border-radius: 8px; text-align: center;">
+                <p style="color: #155724; font-weight: bold; margin: 0;">
+                    ✅ Номер <span id="recognized-plate"></span> розпізнано
+                </p>
+            </div>
+            
+            <!-- Ошибка -->
+            <div id="error-message" style="display: none; margin-top: 20px; padding: 15px; background: #f8d7da; border-radius: 8px; text-align: center;">
+                <p style="color: #721c24; font-weight: bold; margin: 0;">
+                    ❌ <span id="error-text"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Результат -->
+    <div id="result-section" style="display: none;">
+        <div class="card" style="text-align: center;">
+            <div id="result-message"></div>
+            <button id="try-again-btn" class="btn btn-secondary" style="margin-top: 20px;">
+                🔄 Новий в'їзд
+            </button>
+        </div>
+    </div>
+    
+    <!-- Загрузка -->
+    <div id="loading" style="display: none; text-align: center; padding: 40px;">
+        <div style="font-size: 48px; animation: spin 1s linear infinite;">⏳</div>
+        <h3 id="loading-text">Обробка запиту...</h3>
+    </div>
+</div>
+<!-- Правая колонка - Информация о тарифах (без изменений) -->
+        <div class="card" style="flex: 1; min-width: 300px; max-width: 500px;">
+            <h2 style="color: #2c3e50; margin-bottom: 25px; text-align: center;">Тарифи паркування</h2>
+            
+            <!-- Основной тариф - крупно и заметно -->
+            <div style="text-align: center; margin-bottom: 25px; padding: 20px; background: linear-gradient(135deg, #fff8e1 0%, #fff3cd 100%); border-radius: 10px; border: 2px solid #f39c12;">
+                <div style="font-size: 14px; color: #f39c12; font-weight: bold; margin-bottom: 5px; text-transform: uppercase;">АКТУАЛЬНИЙ ТАРИФ</div>
+                <div style="font-size: 48px; color: #2c3e50; font-weight: bold; margin: 10px 0;">
+                    {{ current_price|floatformat:0 }} <span style="font-size: 24px; color: #777;">грн</span>
+                </div>
+                <div style="font-size: 16px; color: #555;">за годину паркування</div>
+            </div>
+
+            <!-- Блоки с важной информацией в ряд -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px;">
+                <!-- Бесплатные 10 минут -->
+                <div style="padding: 15px; background: #e8f6ef; border-radius: 8px; border-left: 4px solid #27ae60; text-align: center;">
+                    <div style="font-size: 24px; color: #27ae60; font-weight: bold; margin-bottom: 5px;">10 ХВ</div>
+                    <div style="font-size: 14px; color: #555; font-weight: bold;">БЕЗКОШТОВНО</div>
+                    <div style="font-size: 12px; color: #777; margin-top: 5px;">для всіх</div>
+                </div>
+
+                <!-- Сотрудники -->
+                <div style="padding: 15px; background: #e8f4fc; border-radius: 8px; border-left: 4px solid #3498db; text-align: center;">
+                    <div style="font-size: 24px; color: #3498db; font-weight: bold; margin-bottom: 5px;">0 ГРН</div>
+                    <div style="font-size: 14px; color: #555; font-weight: bold;">СПІВРОБІТНИКИ</div>
+                    <div style="font-size: 12px; color: #777; margin-top: 5px;">безкоштовно</div>
+                </div>
+            </div>
+
+            <!-- Информация о гостях -->
+            <div style="padding: 15px; background: #f0f7ff; border-radius: 8px; border: 1px solid #d1e3ff; margin-bottom: 20px;">
+                <h4 style="color: #3498db; margin-top: 0; margin-bottom: 10px;">Запрошені гості</h4>
+                <p style="color: #555; margin: 0; font-size: 14px;">
+                    Безкоштовне паркування в межах терміну дії запрошення.
+                </p>
+            </div>
+
+            <!-- Правила расчета -->
+            <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e1e5e9; margin-bottom: 15px;">
+                <h4 style="color: #2c3e50; margin-top: 0; margin-bottom: 10px; font-size: 16px;">Як розраховується вартість:</h4>
+                <ul style="margin: 0; padding-left: 20px; color: #555; font-size: 14px;">
+                    <li>Віднімаємо 10 безкоштовних хвилин</li>
+                    <li>Залишковий час округлюємо до 5 хвилин</li>
+                    <li>Множимо години на тариф {{ current_price|floatformat:0 }} грн/год</li>
+                </ul>
+            </div>
+
+            
+        </div>
+</div>
+</div>
+
+<style>
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .btn {
+        padding: 15px 30px;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    .btn-primary { background: #3498db; color: white; }
+    .btn-success { background: #27ae60; color: white; }
+    .btn-secondary { background: #6c757d; color: white; }
+    .btn-primary:hover { background: #2980b9; }
+    .btn-success:hover { background: #219a52; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .auto-filled { background-color: #d4edda !important; border-color: #28a745 !important; }
+    .progress-bar {
+        width: 100%;
+        height: 4px;
+        background: #e9ecef;
+        border-radius: 2px;
+        margin: 10px 0;
+        overflow: hidden;
+    }
+    .progress-bar-fill {
+        height: 100%;
+        background: #c208fa;
+        width: 0%;
+        transition: width 0.3s linear;
+    }
+    .notification {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        animation: slideIn 0.3s ease;
+    }
+    .bg-success { background: #27ae60; color: white; }
+    .bg-danger { background: #e74c3c; color: white; }
+    .bg-info { background: #f3c1fc; color: black; }
+    .bg-warning { background: #f39c12; color: white; }
+    @keyframes slideIn {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+</style>
+
+<script>
+let checkInterval = null;
+
+// Уведомления
+function showNotification(message, type = 'info') {
+    const area = document.getElementById('notification-area');
+    const div = document.createElement('div');
+    div.className = `notification bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'}`;
+    div.innerHTML = message;
+    area.appendChild(div);
+    setTimeout(() => div.remove(), 5000);
+}
+
+function showProgress(message, seconds) {
+    const area = document.getElementById('notification-area');
+    const div = document.createElement('div');
+    div.className = 'notification bg-info';
+    div.id = 'progress-notification';
+    div.innerHTML = `
+        <div>${message}</div>
+        <div class="progress-bar">
+            <div class="progress-bar-fill" id="progress-fill" style="width: 0%;"></div>
+        </div>
+        <div style="text-align: right; font-size: 12px;" id="progress-time">${seconds} сек</div>
+    `;
+    area.appendChild(div);
+}
+
+function updateProgress(secondsLeft) {
+    const fill = document.getElementById('progress-fill');
+    const time = document.getElementById('progress-time');
+    if (fill && time) {
+        const total = 10;
+        const percent = ((total - secondsLeft) / total) * 100;
+        fill.style.width = percent + '%';
+        time.textContent = Math.ceil(secondsLeft) + ' сек';
+    }
+}
+
+// ==================== ПРОВЕРКА ДАТЧИКА И ЗАПУСК РАСПОЗНАВАНИЯ ====================
+async function checkCarAndRecognize() {
+    try {
+        document.getElementById('sensor-status').style.display = 'block';
+        document.getElementById('sensor-message').textContent = 'Перевіряємо датчик...';
+        document.getElementById('sensor-icon').textContent = '⏳';
+        
+        const response = await fetch('/parking/api/check-entry-sensor/');
+        const data = await response.json();
+        
+        if (!data.success) {
+            document.getElementById('sensor-status').style.display = 'none';
+            return;
+        }
+        
+        if (data.car_detected) {
+            document.getElementById('sensor-icon').textContent = '✅';
+            document.getElementById('sensor-message').textContent = 'Машина виявлена! Запускаємо розпізнавання...';
+            
+            setTimeout(() => {
+                document.getElementById('sensor-status').style.display = 'none';
+                startRecognition();
+            }, 1500);
+        } else {
+            document.getElementById('sensor-icon').textContent = '❌';
+            document.getElementById('sensor-message').textContent = data.message;
+            
+            setTimeout(() => {
+                document.getElementById('sensor-status').style.display = 'none';
+            }, 3000);
+        }
+    } catch (error) {
+        console.error('Ошибка датчика:', error);
+        document.getElementById('sensor-status').style.display = 'none';
+    }
+}
+
+// ==================== ОТПРАВКА НА СЕРВЕР ====================
+function submitEntry() {
+    const plate = document.getElementById('plate-number').value.trim().toUpperCase();
+    
+    if (!plate) {
+        showNotification('❌ Введіть номер', 'error');
+        return;
+    }
+    
+    if (plate.length < 3) {
+        showNotification('❌ Номер занадто короткий', 'error');
+        return;
+    }
+    
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('form-section').style.display = 'none';
+    document.getElementById('result-section').style.display = 'none';
+    
+    const formData = new FormData();
+    formData.append('plate_number', plate);
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        document.getElementById('loading').style.display = 'none';
+        
+        if (data.success) {
+            document.getElementById('result-section').style.display = 'block';
+            document.getElementById('result-message').innerHTML = `
+                <div style="font-size: 72px; color: #27ae60; margin-bottom: 20px;">✅</div>
+                <h3 style="color: #2c3e50;">Успішно!</h3>
+                <p style="font-size: 18px; margin: 15px 0;">${data.message}</p>
+                <p style="color: #777;">Номер: <strong>${plate}</strong></p>
+            `;
+            document.getElementById('plate-number').value = '';
+        } else {
+            document.getElementById('form-section').style.display = 'block';
+            showNotification(data.message || '❌ Помилка', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('form-section').style.display = 'block';
+        showNotification('❌ Помилка з\'єднання', 'error');
+    });
+}
+
+// ==================== РАСПОЗНАВАНИЕ НОМЕРА ====================
+async function startRecognition() {
+    try {
+        document.getElementById('plate-number').value = '';
+        document.getElementById('recognized-message').style.display = 'none';
+        document.getElementById('error-message').style.display = 'none';
+        
+        showProgress('Розпізнавання... Будь ласка, зачекайте', 10);
+        
+        const res = await fetch('http://127.0.0.1:5001/start', { method: 'POST' });
+        const data = await res.json();
+        
+        if (!data.success) {
+            showNotification('❌ Помилка запуску камери', 'error');
+            return;
+        }
+        
+        let attempts = 0;
+        checkInterval = setInterval(async () => {
+            attempts++;
+            
+            const statusRes = await fetch('http://127.0.0.1:5001/status');
+            const status = await statusRes.json();
+            
+            if (status.is_recognizing) {
+                updateProgress(status.time_left);
+            }
+            
+            const resultRes = await fetch('http://127.0.0.1:5001/result');
+            const resultData = await resultRes.json();
+            
+            if (resultData.success && resultData.plate) {
+                clearInterval(checkInterval);
+                document.getElementById('progress-notification')?.remove();
+                
+                const input = document.getElementById('plate-number');
+                input.value = resultData.plate;
+                input.classList.add('auto-filled');
+                document.getElementById('recognized-plate').textContent = resultData.plate;
+                document.getElementById('recognized-message').style.display = 'block';
+                
+                fetch('http://127.0.0.1:5001/stop', { method: 'POST' });
+            }
+            
+            if (!status.is_recognizing && !resultData.success) {
+                clearInterval(checkInterval);
+                document.getElementById('progress-notification')?.remove();
+                
+                document.getElementById('error-text').textContent = 'Не вдалося розпізнати номер. Введіть його вручну.';
+                document.getElementById('error-message').style.display = 'block';
+                
+                fetch('http://127.0.0.1:5001/stop', { method: 'POST' });
+            }
+            
+            if (attempts >= 15) {
+                clearInterval(checkInterval);
+                document.getElementById('progress-notification')?.remove();
+                if (!resultData.success) {
+                    document.getElementById('error-text').textContent = 'Час вичерпано. Введіть номер вручну.';
+                    document.getElementById('error-message').style.display = 'block';
+                }
+                fetch('http://127.0.0.1:5001/stop', { method: 'POST' });
+            }
+        }, 1000);
+        
+    } catch (error) {
+        console.error('Ошибка распознавания:', error);
+        showNotification('❌ Помилка з\'єднання з сервером', 'error');
+    }
+}
+
+// ==================== ИНИЦИАЛИЗАЦИЯ ====================
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('check-car-btn').onclick = checkCarAndRecognize;
+    document.getElementById('submit-btn').onclick = submitEntry;
+    
+    document.getElementById('try-again-btn').onclick = function() {
+        document.getElementById('result-section').style.display = 'none';
+        document.getElementById('form-section').style.display = 'block';
+        document.getElementById('plate-number').value = '';
+        document.getElementById('plate-number').focus();
+        document.getElementById('recognized-message').style.display = 'none';
+        document.getElementById('error-message').style.display = 'none';
+        document.getElementById('sensor-status').style.display = 'none';
+    };
+    
+    document.getElementById('plate-number').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            submitEntry();
+        }
+    });
+    
+    document.getElementById('plate-number').focus();
+});
+</script>
+{% endblock %}

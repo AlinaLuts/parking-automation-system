@@ -1,0 +1,34 @@
+<!-- arduino_api/templates/arduino_api/test_control.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Тест Arduino</title>
+</head>
+<body>
+    <h1>Тест управления шлагбаумом</h1>
+    
+    <button onclick="sendCommand('open_entry')">Открыть въезд</button>
+    <button onclick="sendCommand('close_entry')">Закрыть въезд</button>
+    <button onclick="sendCommand('status')">Статус</button>
+    
+    <div id="result"></div>
+    
+    <script>
+    function sendCommand(action) {
+        fetch('', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: 'action=' + action
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('result').innerHTML = 
+                `Ответ: ${data.response}<br>Успешно: ${data.success}`;
+        });
+    }
+    </script>
+</body>
+</html>

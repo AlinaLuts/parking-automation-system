@@ -1,0 +1,254 @@
+{% extends 'parking_app/base.html' %}
+
+{% block title %}Мої запрошення | Паркінг{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Заголовок страницы -->
+    <div class="page-header">
+        <h1>Мої запрошення</h1>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+            <div>
+                <a href="{% url 'parking_app:dashboard' %}" class="btn secondary" style="margin-bottom: 10px;">
+                    ← Назад до панелі
+                </a>
+                <a href="{% url 'parking_app:staff_create_invitation' %}" class="btn" style="margin-left: 10px;">
+                    + Створити нове запрошення
+                </a>
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <div style="background: #e8f5e9; padding: 10px 20px; border-radius: 8px; border: 1px solid #27ae60; text-align: center; min-width: 100px;">
+                    <div style="font-size: 24px; font-weight: bold; color: #27ae60;">{{ active_count|default:0 }}</div>
+                    <div style="font-size: 14px; color: #666;">Активних</div>
+                </div>
+                <div style="background: #fff5eb; padding: 10px 20px; border-radius: 8px; border: 1px solid #ff8c42; text-align: center; min-width: 100px;">
+                    <div style="font-size: 24px; font-weight: bold; color: #ff6b2c;">{{ total_count|default:0 }}</div>
+                    <div style="font-size: 14px; color: #666;">Всього</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if invitations %}
+        <!-- Таблица запросов -->
+        <div style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; min-width: 800px;">
+                    <thead>
+                        <tr style="background: linear-gradient(135deg, #ffa366 0%, #ff8c42 100%);">
+                            <th style="padding: 12px 15px; text-align: left; color: white; font-weight: 600; border-right: 1px solid rgba(255,255,255,0.2);">Автомобіль</th>
+                            <th style="padding: 12px 15px; text-align: left; color: white; font-weight: 600; border-right: 1px solid rgba(255,255,255,0.2);">Гість</th>
+                            <th style="padding: 12px 15px; text-align: left; color: white; font-weight: 600; border-right: 1px solid rgba(255,255,255,0.2);">Час паркування</th>
+                            <th style="padding: 12px 15px; text-align: left; color: white; font-weight: 600; border-right: 1px solid rgba(255,255,255,0.2);">Тривалість</th>
+                            <th style="padding: 12px 15px; text-align: left; color: white; font-weight: 600;">Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invite in invitations %}
+                        <tr style="border-bottom: 1px solid #eee; {% if invite.status == 'Активне' %}border-left: 3px solid #27ae60;{% endif %}">
+                            <!-- Информация об автомобиле -->
+                            <td style="padding: 12px 15px; vertical-align: top;">
+                                <div style="font-weight: bold; font-family: monospace; background: #f5f5f5; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-bottom: 5px;">
+                                    {{ invite.vehicle_plate|default:"Без авто" }}
+                                </div>
+                                <div style="font-size: 14px; color: #666;">
+                                    {{ invite.vehicle_model|default:"Без моделі" }}
+                                </div>
+                            </td>
+                            
+                            <!-- Информация о госте -->
+                            <td style="padding: 12px 15px; vertical-align: top;">
+                                {% if invite.guest_name and invite.guest_name != 'Гість без імені' %}
+                                    <div style="font-weight: 500; margin-bottom: 5px;">
+                                        {{ invite.guest_name }}
+                                    </div>
+                                {% endif %}
+                                <div style="font-size: 14px; color: #666;">
+                                    📱 {{ invite.phone_number|default:"Без телефону" }}
+                                </div>
+                            </td>
+                            
+                            <!-- Время парковки -->
+                            <td style="padding: 12px 15px; vertical-align: top;">
+                                <div style="margin-bottom: 5px;">
+                                    <span style="font-size: 13px; color: #888;">Заїзд:</span><br>
+                                    <span style="font-weight: 500;">{{ invite.start_time|date:"d.m.Y H:i" }}</span>
+                                </div>
+                                <div>
+                                    <span style="font-size: 13px; color: #888;">Виїзд:</span><br>
+                                    <span style="font-weight: 500;">{{ invite.end_time|date:"d.m.Y H:i" }}</span>
+                                </div>
+                            </td>
+                            
+                            <!-- Продолжительность -->
+                            <td style="padding: 12px 15px; vertical-align: top; text-align: center;">
+                                {% with invite.start_time|date:"U" as start_time %}
+                                {% with invite.end_time|date:"U" as end_time %}
+                                {% with duration_seconds=end_time|add:"-"|add:start_time %}
+                                    {% if duration_seconds > 0 %}
+                                        {% if duration_seconds < 86400 %}
+                                            <div style="background: #e3f2fd; color: #1565c0; padding: 6px 12px; border-radius: 15px; display: inline-block; font-size: 14px; font-weight: 500; border: 1px solid #bbdefb;">
+                                                {{ duration_seconds|divisibleby:"3600" }} год
+                                            </div>
+                                        {% else %}
+                                            <div style="background: #e8f5e9; color: #2e7d32; padding: 6px 12px; border-radius: 15px; display: inline-block; font-size: 14px; font-weight: 500; border: 1px solid #c8e6c9;">
+                                                {{ duration_seconds|divisibleby:"86400" }} дн
+                                            </div>
+                                        {% endif %}
+                                    {% else %}
+                                        <div style="color: #999; font-size: 14px;">—</div>
+                                    {% endif %}
+                                {% endwith %}
+                                {% endwith %}
+                                {% endwith %}
+                            </td>
+                            
+                            <!-- Статус -->
+                            <td style="padding: 12px 15px; vertical-align: top; text-align: center;">
+                                {% if invite.status == 'Активне' %}
+                                    <div style="background: #e8f5e9; color: #27ae60; padding: 6px 12px; border-radius: 15px; display: inline-block; font-size: 14px; font-weight: 500; border: 1px solid #c8e6c9;">
+                                        ● Активне
+                                    </div>
+                                {% elif invite.status == 'Завершено' %}
+                                    <div style="background: #f5f5f5; color: #95a5a6; padding: 6px 12px; border-radius: 15px; display: inline-block; font-size: 14px; font-weight: 500; border: 1px solid #e0e0e0;">
+                                        ● Завершено
+                                    </div>
+                                {% else %}
+                                    <div style="background: #fff8e1; color: #ff8f00; padding: 6px 12px; border-radius: 15px; display: inline-block; font-size: 14px; font-weight: 500; border: 1px solid #ffe082;">
+                                        ● Майбутнє
+                                    </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Простая пагинация -->
+        {% if page_obj and page_obj.paginator.num_pages > 1 %}
+        <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 30px; padding: 15px; background: white; border-radius: 8px;">
+            {% if page_obj.has_previous %}
+                <a href="?page=1" style="padding: 8px 15px; color: #ff6b2c; text-decoration: none;">« Перша</a>
+                <a href="?page={{ page_obj.previous_page_number }}" style="padding: 8px 15px; color: #ff6b2c; text-decoration: none;">‹ Попередня</a>
+            {% endif %}
+            
+            <span style="color: #666; font-weight: 500; padding: 8px 15px;">
+                Сторінка {{ page_obj.number }} з {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" style="padding: 8px 15px; color: #ff6b2c; text-decoration: none;">Наступна ›</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}" style="padding: 8px 15px; color: #ff6b2c; text-decoration: none;">Остання »</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    {% else %}
+        <!-- Сообщение об отсутствии запросов -->
+        <div style="text-align: center; padding: 50px 20px; background: white; border-radius: 8px; margin-top: 30px;">
+            <div style="font-size: 48px; margin-bottom: 20px; opacity: 0.3;"></div>
+            <h3 style="color: #ff6b2c; margin-bottom: 10px;">У вас ще немає запрошень</h3>
+            <p style="color: #666; margin-bottom: 30px; font-size: 16px;">Створіть перше запрошення для гостя вашого паркінгу</p>
+            <a href="{% url 'parking_app:staff_create_invitation' %}" class="btn">
+                + Створити перше запрошення
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .page-header {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #ffddc1;
+    }
+    
+    .page-header h1 {
+        font-size: 24px;
+        color: #f75510;
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+    
+    table tr:hover {
+        background-color: #fff9f5;
+    }
+    
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .container {
+            padding: 15px;
+        }
+        
+        .page-header > div {
+            flex-direction: column;
+        }
+        
+        .page-header > div > div:first-child {
+            margin-bottom: 15px;
+        }
+        
+        .page-header > div > div:first-child a {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .page-header > div > div:last-child {
+            justify-content: center;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Автоматический расчет длительности для каждой строки
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const timeCells = row.querySelectorAll('td:nth-child(3) div');
+        if (timeCells.length >= 2) {
+            const startText = timeCells[0].querySelector('span:last-child').textContent;
+            const endText = timeCells[1].querySelector('span:last-child').textContent;
+            
+            // Парсинг дат
+            const parseDate = (text) => {
+                const [datePart, timePart] = text.split(' ');
+                const [day, month, year] = datePart.split('.');
+                const [hours, minutes] = timePart.split(':');
+                return new Date(`${year}-${month}-${day}T${hours}:${minutes}`);
+            };
+            
+            try {
+                const startDate = parseDate(startText);
+                const endDate = parseDate(endText);
+                const durationMs = endDate - startDate;
+                
+                if (durationMs > 0) {
+                    const durationHours = Math.floor(durationMs / (1000 * 60 * 60));
+                    const durationDays = Math.floor(durationHours / 24);
+                    const hours = durationHours % 24;
+                    
+                    const durationCell = row.querySelector('td:nth-child(4) div');
+                    if (durationCell) {
+                        if (durationDays > 0) {
+                            if (hours > 0) {
+                                durationCell.textContent = durationDays + ' дн ' + hours + ' год';
+                            } else {
+                                durationCell.textContent = durationDays + ' дн';
+                            }
+                        } else {
+                            durationCell.textContent = durationHours + ' год';
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log('Ошибка расчета длительности:', e);
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

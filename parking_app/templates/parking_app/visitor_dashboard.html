@@ -1,0 +1,405 @@
+<!-- parking_app/templates/parking_app/visitor_dashboard.html -->
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель відвідувача - Паркінг</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.2);
+        }
+        
+        .header h1 {
+            margin: 0 0 10px 0;
+        }
+        
+        .btn-logout {
+            background: white;
+            color: #1976D2;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            float: right;
+            margin-top: -40px;
+        }
+        
+        .btn-logout:hover {
+            background: #f0f0f0;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        
+        .card h3 {
+            color: #1976D2;
+            margin-top: 0;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e3f2fd;
+        }
+        
+        .price-info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .price-info p {
+            margin: 8px 0;
+        }
+        
+        .current-parking {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .current-parking p {
+            margin: 8px 0;
+        }
+        
+        .vehicle-list {
+            margin: 15px 0;
+        }
+        
+        .vehicle-item {
+            background: #f8f9fa;
+            border-left: 3px solid #2196F3;
+            border-radius: 5px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .history-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .action-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+        }
+        
+        .action-btn:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+        
+        .action-btn.secondary {
+            background: #6c757d;
+        }
+        
+        .action-btn.secondary:hover {
+            background: #545b62;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        
+        .badge-paid {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge-active {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1976D2;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .payment-note {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка -->
+        <div class="header">
+            <h1>Вітаємо, {{ user_info.first_name }}!</h1>
+            <p>Телефон: {{ user_info.phone }}</p>
+            <p>Статус: <strong>Платний відвідувач</strong></p>
+            <a href="{% url 'parking_app:guest_logout' %}" class="btn-logout">
+                Вийти
+            </a>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+        
+        <div class="grid">
+            <!-- Левая колонка -->
+            <div>
+                <!-- Тарифы -->
+                <div class="card">
+                    <h3>💰 Тарифи на паркування</h3>
+                    
+                    <div class="price-info">
+                        <p><strong>Поточний тариф:</strong> {{ price.amount }} грн/год</p>
+                        {% if price.start_time %}
+                        <p><strong>Діє з:</strong> {{ price.start_time|date:"d.m.Y H:i" }}</p>
+                        {% endif %}
+                        {% if price.end_time %}
+                        <p><strong>Діє до:</strong> {{ price.end_time|date:"d.m.Y H:i" }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="payment-note">
+                        <p><strong>Примітка:</strong></p>
+                        <p>• Паркування оплачується за кожну розпочату годину</p>
+                        <p>• При виїзді система автоматично розрахує вартість</p>
+                        <p>• Оплата можлива після виїзду з паркінгу</p>
+                    </div>
+                </div>
+                
+                <!-- Автомобили -->
+                <div class="card" style="margin-top: 25px;">
+                    <h3>🚗 Мої автомобілі</h3>
+                    
+                    {% if vehicles %}
+                    <div class="vehicle-list">
+                        {% for vehicle in vehicles %}
+                        <div class="vehicle-item">
+                            <strong>{{ vehicle.0 }}</strong>
+                            <div class="text-muted">{{ vehicle.1|default:"Модель не вказана" }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <p>Немає доданих автомобілів</p>
+                        <p>Додайте автомобіль для заїзду на паркінг</p>
+                    </div>
+                    {% endif %}
+                    
+                    <a href="{% url 'parking_app:guest_add_vehicle' %}" class="action-btn secondary" style="margin-top: 15px;">
+                        + Додати автомобіль
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Правая колонка -->
+            <div>
+                <!-- Текущая парковка -->
+                <div class="card">
+                    <h3>🅿️ Поточне паркування</h3>
+                    
+                    {% if current_parking.0 %}
+                    <div class="current-parking">
+                        <p><strong>Автомобіль:</strong> {{ current_parking.1 }}</p>
+                        <p><strong>Заїхав:</strong> {{ current_parking.2|date:"d.m.Y H:i" }}</p>
+                        <p><strong>Тип:</strong> 
+                            <span class="badge badge-paid">Платно</span>
+                        </p>
+                        <p><strong>Статус:</strong> <span class="badge badge-active">На парковці</span></p>
+                        <p><strong>Тариф:</strong> {{ price.amount }} грн/год</p>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <p>Немає активного паркування</p>
+                        <p>Заїдьте на паркінг, щоб розпочати сесію</p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Последние парковки -->
+                <div class="card" style="margin-top: 25px;">
+                    <h3>📋 Останні паркування</h3>
+                    
+                    {% if recent_history %}
+                    <div style="max-height: 250px; overflow-y: auto;">
+                        {% for park in recent_history %}
+                        <div class="history-item">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong>{{ park.2 }}</strong><br>
+                                    <small>{{ park.0|date:"d.m.Y H:i" }}</small>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="badge badge-paid">
+                                        {{ park.3 }}
+                                    </span><br>
+                                    {% if park.4 %}
+                                    <small><strong>{{ park.4 }} грн</strong></small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <a href="{% url 'parking_app:guest_parking_history' %}" class="action-btn secondary" style="margin-top: 15px;">
+                        Вся історія →
+                    </a>
+                    {% else %}
+                    <div class="empty-state">
+                        <p>Історія паркувань порожня</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Быстрые действия -->
+        <div class="card">
+            <h3>⚡ Швидкі дії</h3>
+            
+            <div class="quick-stats">
+                <div class="stat-box">
+                    <div class="stat-number">{{ vehicles|length }}</div>
+                    <div class="stat-label">Автомобілі</div>
+                </div>
+                
+                <div class="stat-box">
+                    <div class="stat-number">
+                        {% if current_parking.0 %}1{% else %}0{% endif %}
+                    </div>
+                    <div class="stat-label">На парковці</div>
+                </div>
+                
+                <div class="stat-box">
+                    <div class="stat-number">{{ recent_history|length }}</div>
+                    <div class="stat-label">Останні паркування</div>
+                </div>
+                
+                <div class="stat-box">
+                    <div class="stat-number">{{ price.amount }} грн</div>
+                    <div class="stat-label">Тариф за годину</div>
+                </div>
+            </div>
+            
+            <div class="actions">
+                {% if current_parking.0 %}
+                <a href="" class="action-btn">
+                    🚪 Виїхати з паркінгу
+                </a>
+                {% else %}
+                <a href="{% url 'parking_app:process_entry' %}" class="action-btn">
+                    🚗 Заїхати на паркінг
+                </a>
+                {% endif %}
+                
+                <a href="{% url 'parking_app:guest_edit_profile' %}" class="action-btn secondary">
+                    👤 Редагувати профіль
+                </a>
+                
+                <a href="{% url 'parking_app:guest_parking_history' %}" class="action-btn secondary">
+                    📋 Історія паркувань
+                </a>
+                
+            </div>
+        </div>
+    </div>
+</body>
+</html>

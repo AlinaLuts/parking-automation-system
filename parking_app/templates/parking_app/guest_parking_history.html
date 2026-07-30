@@ -1,0 +1,243 @@
+<!-- parking_app/templates/parking_app/guest_parking_history.html -->
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Історія паркувань - Паркінг</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.2);
+        }
+        
+        .header h1 {
+            margin: 0 0 10px 0;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2E7D32;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .history-table {
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #4CAF50;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:hover {
+            background: #f8fff9;
+        }
+        
+        .badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .badge-free {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-paid {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge-active {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .btn-back {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-back:hover {
+            background: #2E7D32;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+        
+        .empty-state p {
+            margin: 10px 0;
+        }
+        
+        .time-cell {
+            white-space: nowrap;
+        }
+        
+        .price-cell {
+            font-weight: bold;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Історія паркувань</h1>
+            <p>Останні 20 паркувань</p>
+        </div>
+        
+        <!-- Статистика -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.total }}</div>
+                <div class="stat-label">Всього паркувань</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.active }}</div>
+                <div class="stat-label">Активних зараз</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.cost|floatformat:2 }} грн</div>
+                <div class="stat-label">Загальна сума оплат</div>
+            </div>
+        </div>
+        
+        <!-- Таблица истории -->
+        <div class="history-table">
+            {% if history %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Дата заїзду</th>
+                        <th>Дата виїзду</th>
+                        <th>Автомобіль</th>
+                        <th>Тип</th>
+                        <th>Сума</th>
+                        <th>Статус</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for park in history %}
+                    <tr>
+                        <td class="time-cell">{{ park.0|date:"d.m.Y H:i" }}</td>
+                        <td class="time-cell">
+                            {% if park.1 %}
+                                {{ park.1|date:"d.m.Y H:i" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ park.2 }}</td>
+                        <td>
+                            <span class="badge {% if park.3 == 'Безкоштовно' %}badge-free{% else %}badge-paid{% endif %}">
+                                {{ park.3 }}
+                            </span>
+                        </td>
+                        <td class="price-cell">
+                            {% if park.4 %}
+                                {{ park.4 }} грн
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge {% if park.5 == 'На парковці' %}badge-active{% endif %}">
+                                {{ park.5 }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <p>📭 Історія паркувань порожня</p>
+                <p>Тут з'являться ваші паркування після заїздів</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Кнопка назад -->
+        {% if user_type == 'guest' %}
+        <a href="{% url 'parking_app:guest_dashboard' %}" class="btn-back">
+            ← Назад до панелі
+        </a>
+        {% else %}
+        <a href="{% url 'parking_app:visitor_dashboard' %}" class="btn-back">
+            ← Назад до панелі
+        </a>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!-- parking_app/templates/parking_app/staff_delete_vehicle.html -->
+{% extends 'parking_app/base.html' %}
+
+{% block title %}Видалити автомобіль{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Видалити автомобіль</h2>
+    
+    {% if error %}
+        <div class="error" style="background: #ffeaea; color: #e74c3c; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #e74c3c;">
+            <strong>Помилка:</strong> {{ error }}
+        </div>
+    {% endif %}
+    
+    <div style="padding: 20px; background: #ffeaea; border-radius: 8px; margin-bottom: 20px;">
+        <h3 style="color: #e74c3c; margin-top: 0;">⚠️ Увага!</h3>
+        <p>Ви збираєтесь видалити автомобіль з номерним знаком: <strong>{{ plate_number }}</strong></p>
+        
+        <div style="margin-top: 15px; padding: 15px; background: #fff5f5; border-radius: 4px;">
+    <p><strong>Обмеження при видаленні:</strong></p>
+    <ul style="margin-bottom: 0;">
+        <li>Автомобіль не повинен бути на паркінгу зараз</li>
+        <li>Автомобіль не повинен використовуватись в активних запрошеннях</li>
+        <li>Історія паркувань зберігається в системі</li>
+    </ul>
+</div>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn" style="background: #e74c3c; flex: 1;">Так, видалити</button>
+            <a href="{% url 'parking_app:dashboard' %}" class="btn" style="background: #95a5a6; flex: 1; text-align: center;">Скасувати</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

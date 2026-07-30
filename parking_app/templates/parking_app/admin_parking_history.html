@@ -1,0 +1,142 @@
+<!-- parking_app/templates/parking_app/admin_parking_history.html -->
+{% extends 'parking_app/base.html' %}
+{% block title %}Історія паркувань{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="margin-bottom: 30px;">
+        <a href="{% url 'parking_app:dashboard' %}" style="color: #667eea; text-decoration: none; font-weight: 500;">
+            ← Назад до панелі
+        </a>
+        <h1 style="margin-top: 10px; color: #2c3e50;">📊 Історія паркувань</h1>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="card" style="margin-bottom: 30px;">
+        <h3 style="color: #2c3e50; margin-bottom: 20px;">🔍 Фільтри</h3>
+        <form method="get">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #555;">Дата з</label>
+                    <input type="date" name="start_date" value="{{ filters.start_date }}" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 8px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #555;">Дата по</label>
+                    <input type="date" name="end_date" value="{{ filters.end_date }}" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 8px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #555;">Тип користувача</label>
+                    <select name="user_type" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 8px;">
+                        <option value="">Всі</option>
+                        <option value="staff" {% if filters.user_type == 'staff' %}selected{% endif %}>Співробітники</option>
+                        <option value="guest" {% if filters.user_type == 'guest' %}selected{% endif %}>Гості</option>
+                        <option value="visitor" {% if filters.user_type == 'visitor' %}selected{% endif %}>Відвідувачі</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #555;">Номер авто</label>
+                    <input type="text" name="plate_number" value="{{ filters.plate_number }}" placeholder="AA1234BB" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 8px;">
+                </div>
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <button type="submit" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;">
+                    Застосувати фільтри
+                </button>
+                <a href="{% url 'parking_app:admin_parking_history' %}" style="padding: 10px 20px; background: #f8f9fa; color: #555; text-decoration: none; border-radius: 8px; font-weight: 500; border: 2px solid #e1e5e9;">
+                    Скинути
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Статистика -->
+    {% if stats %}
+    <div class="card" style="margin-bottom: 30px;">
+        <h3 style="color: #2c3e50; margin-bottom: 20px;">📈 Статистика за період</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div style="text-align: center; background: #f0f7ff; padding: 20px; border-radius: 8px;">
+                <div style="font-size: 32px; font-weight: bold; color: #3498db;">{{ stats.0 }}</div>
+                <div style="color: #3498db; font-weight: 500; margin-top: 10px;">Співробітників</div>
+            </div>
+            <div style="text-align: center; background: #f0f9f0; padding: 20px; border-radius: 8px;">
+                <div style="font-size: 32px; font-weight: bold; color: #27ae60;">{{ stats.1 }}</div>
+                <div style="color: #27ae60; font-weight: 500; margin-top: 10px;">Гостей</div>
+            </div>
+            <div style="text-align: center; background: #fff8e1; padding: 20px; border-radius: 8px;">
+                <div style="font-size: 32px; font-weight: bold; color: #f39c12;">{{ stats.2 }}</div>
+                <div style="color: #f39c12; font-weight: 500; margin-top: 10px;">Відвідувачів</div>
+            </div>
+            <div style="text-align: center; background: #ffeaea; padding: 20px; border-radius: 8px;">
+                <div style="font-size: 32px; font-weight: bold; color: #e74c3c;">{{ stats.3 }} грн</div>
+                <div style="color: #e74c3c; font-weight: 500; margin-top: 10px;">Дохід</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Таблица истории -->
+    <div class="card">
+        <h3 style="color: #2c3e50; margin-bottom: 20px;">📋 Детальна історія</h3>
+        
+        {% if history %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f8f9fa;">
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #555;">Номер авто</th>
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #555;">Заїзд</th>
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #555;">Виїзд</th>
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #555;">Тривалість</th>
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #555;">Тип</th>
+                        <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e1e5e9; color: #555;">Вартість</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in history %}
+                    <tr style="border-bottom: 1px solid #e1e5e9;">
+                        <td style="padding: 15px;">
+                            <div style="font-weight: 500; color: #2c3e50;">{{ record.0 }}</div>
+                        </td>
+                        <td style="padding: 15px;">
+                            <div style="color: #2c3e50;">{{ record.1|date:"d.m.Y H:i" }}</div>
+                        </td>
+                        <td style="padding: 15px;">
+                            <div style="color: #2c3e50;">{{ record.2|date:"d.m.Y H:i" }}</div>
+                        </td>
+                        <td style="padding: 15px;">
+                            <div style="color: #555;">{{ record.6|floatformat:1 }} год</div>
+                        </td>
+                        <td style="padding: 15px;">
+                            {% if record.3 == 'Співробітник' %}
+                            <span style="background: #3498db; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500;">{{ record.3 }}</span>
+                            {% elif record.3 == 'Запрошений гість' %}
+                            <span style="background: #27ae60; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500;">{{ record.3 }}</span>
+                            {% else %}
+                            <span style="background: #f39c12; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500;">{{ record.3 }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 15px;">
+                            {% if record.5 %}
+                            <div style="font-weight: bold; color: #e74c3c;">{{ record.5 }} грн</div>
+                            <div style="color: #777; font-size: 12px;">{{ record.4 }} грн/год</div>
+                            {% else %}
+                            <div style="color: #27ae60; font-weight: 500;">Безкоштовно</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div style="margin-top: 20px; text-align: center; color: #777;">
+            Всього записів: {{ history|length }}
+        </div>
+        {% else %}
+        <div style="padding: 40px; text-align: center; color: #777;">
+            😐 За вибраний період паркувань не знайдено
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
